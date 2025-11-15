@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить категорию — FinanceTrack{% endblock %}
+
+{% block content %}
+<section class="main">
+    <div class="container">
+        <div class="hero-compact">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Добавить категорию</h1>
+                    <p class="hero-subtitle">Создайте новую категорию для ваших транзакций</p>
+                </div>
+                <div class="hero-actions">
+                    <a href="{{ url_for('categories.list_categories') }}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i>
+                        Назад к списку
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <!-- Основная форма -->
+            <div class="content-column">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" id="categoryForm">
+                            <!-- Название категории -->
+                            <div class="form-group">
+                                <label for="name" class="form-label">Название категории *</label>
+                                <input type="text" 
+                                       id="name" 
+                                       name="name" 
+                                       class="form-input" 
+                                       placeholder="Например: Зарплата, Продукты, Развлечения..." 
+                                       required
+                                       maxlength="100">
+                                <div class="form-text">
+                                    Название должно быть уникальным для вашего аккаунта
+                                </div>
+                            </div>
+
+                            <!-- Тип категории -->
+                            <div class="form-group">
+                                <label class="form-label">Тип категории *</label>
+                                <div class="operation-type-selector">
+                                    {% set default_type = request.args.get('type', 'EXPENSE') %}
+                                    <input type="radio" 
+                                           id="type_income" 
+                                           name="operation_type" 
+                                           value="INCOME" 
+                                           required
+                                           {{ 'checked' if default_type == 'INCOME' }}>
+                                    <label for="type_income" class="operation-btn income">
+                                        <i class="fas fa-arrow-up"></i>
+                                        Доход
+                                    </label>
+                                    
+                                    <input type="radio" 
+                                           id="type_expense" 
+                                           name="operation_type" 
+                                           value="EXPENSE" 
+                                           required
+                                           {{ 'checked' if default_type == 'EXPENSE' }}>
+                                    <label for="type_expense" class="operation-btn expense">
+                                        <i class="fas fa-arrow-down"></i>
+                                        Расход
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Кнопки -->
+                            <div class="flex gap-3">
+                                <button type="submit" class="btn btn-primary w-full">
+                                    <i class="fas fa-plus"></i>
+                                    Создать категорию
+                                </button>
+                                <a href="{{ url_for('categories.list_categories') }}" class="btn btn-outline">
+                                    Отмена
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Боковая панель с подсказками -->
+            <div class="content-column">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Подсказки</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="category-icon income">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium">Категории доходов</div>
+                                    <div class="text-xs text-text-light">
+                                        Зарплата, Переводы, Инвестиции, Подарки, Возвраты
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="category-icon expense">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium">Категории расходов</div>
+                                    <div class="text-xs text-text-light">
+                                        Продукты, Транспорт, Развлечения, Здоровье, Комунальные
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Популярные категории -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Популярные категории</h3>
+                        <div class="space-y-2">
+                            <div class="popular-category income">
+                                <i class="fas fa-briefcase"></i>
+                                <span>Зарплата</span>
+                            </div>
+                            <div class="popular-category expense">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Продукты</span>
+                            </div>
+                            <div class="popular-category expense">
+                                <i class="fas fa-car"></i>
+                                <span>Транспорт</span>
+                            </div>
+                            <div class="popular-category expense">
+                                <i class="fas fa-home"></i>
+                                <span>Аренда</span>
+                            </div>
+                            <div class="popular-category income">
+                                <i class="fas fa-gift"></i>
+                                <span>Подарки</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Автозаполнение популярных категорий
+document.querySelectorAll('.popular-category').forEach(item => {
+    item.addEventListener('click', function() {
+        const name = this.querySelector('span').textContent;
+        const type = this.classList.contains('income') ? 'INCOME' : 'EXPENSE';
+        
+        document.getElementById('name').value = name;
+        document.getElementById(`type_${type.toLowerCase()}`).checked = true;
+    });
+});
+
+// Валидация формы
+document.getElementById('categoryForm').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const operationType = document.querySelector('input[name="operation_type"]:checked');
+    
+    let isValid = true;
+    
+    if (!name) {
+        alert('Введите название категории');
+        isValid = false;
+    } else if (!operationType) {
+        alert('Выберите тип категории');
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+    }
+});
+</script>
+
+<style>
+.popular-category {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+}
+
+.popular-category:hover {
+    background: var(--background-lighter);
+    transform: translateX(5px);
+}
+
+.popular-category.income {
+    border-left: 3px solid var(--success);
+}
+
+.popular-category.expense {
+    border-left: 3px solid var(--error);
+}
+
+.popular-category i {
+    width: 1rem;
+    text-align: center;
+}
+</style>
+{% endblock %}

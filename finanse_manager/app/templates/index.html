@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Главная — FinanceTrack{% endblock %}
+
+{% block content %}
+<!-- Compact Hero Section -->
+{% if current_user.is_authenticated %}
+<!-- Quick Add Button Floating -->
+<div class="floating-action">
+    <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-floating" title="Добавить транзакцию">
+        <i class="fas fa-plus"></i>
+    </a>
+</div>
+{% endif %}
+
+{% if current_user.is_authenticated %}
+<!-- Main Content Grid -->
+<section class="main-content">
+    <div class="container">
+        <div class="content-grid">
+            <!-- Left Column: Monthly Stats -->
+            <div class="content-column">
+                <div class="section-header">
+                    <h2 class="section-title">За месяц</h2>
+                    <span class="section-date">{{ now.strftime('%B %Y') }}</span>
+                </div>
+
+                <!-- Monthly Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card income">
+                        <div class="stat-icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ "₽{:,.2f}".format(monthly_stats.income) }}</div>
+                            <div class="stat-label">Доходы</div>
+                        </div>
+                    </div>
+                    <div class="stat-card expense">
+                        <div class="stat-icon">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ "₽{:,.2f}".format(monthly_stats.expenses) }}</div>
+                            <div class="stat-label">Расходы</div>
+                        </div>
+                    </div>
+                    <div class="stat-card balance">
+                        <div class="stat-icon">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value {{ 'positive' if monthly_stats.balance >= 0 else 'negative' }}">
+                                {{ "₽{:,.2f}".format(monthly_stats.balance) }}
+                            </div>
+                            <div class="stat-label">Баланс</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combined Pie Chart - Compact Version -->
+                {% set all_categories = categories_summary %}
+                {% if all_categories %}
+                <div class="card compact-chart-card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3 class="card-title">Распределение по категориям</h3>
+                            <div class="chart-total-badge">
+                                Баланс: {{ "₽{:,.0f}".format(monthly_stats.balance) }}
+                            </div>
+                        </div>
+                        <div class="compact-chart-container">
+                            <canvas id="combinedChart"></canvas>
+                            <div class="chart-center-text">
+                                <div class="center-income">📈 {{ "₽{:,.0f}".format(monthly_stats.income) }}</div>
+                                <div class="center-expense">📉 {{ "₽{:,.0f}".format(monthly_stats.expenses) }}</div>
+                               
+                            </div>
+                        </div>
+                        <div class="chart-legend-compact">
+                            {% for category_data in all_categories %}
+                            {% set category = category_data.category %}
+                            <div class="legend-item">
+                                <div class="legend-color 
+                                    {% if category.operation_type == 'INCOME' %}income-color{% else %}expense-color{% endif %}">
+                                    <i class="fas {% if category.operation_type == 'INCOME' %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                                </div>
+                                <span class="legend-label">{{ category.name }}</span>
+                                <span class="legend-amount">{{ "₽{:,.0f}".format(category_data.total_amount) }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="empty-state">
+                            <i class="fas fa-chart-pie"></i>
+                            <p>Нет данных для диаграммы</p>
+                            <p class="text-sm">Добавьте транзакции, чтобы увидеть распределение</p>
+                            <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
+                                Добавить транзакцию
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Monthly Transactions -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3 class="card-title">Транзакции за месяц</h3>
+                            <div class="card-actions">
+                                <a href="{{ url_for('transactions.list_transactions') }}" class="btn-link">
+                                    Все транзакции
+                                </a>
+                                <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i>
+                                    Добавить
+                                </a>
+                            </div>
+                        </div>
+                        
+                        {% if monthly_transactions %}
+                        <div class="transactions-list">
+                            {% for transaction in monthly_transactions %}
+                            <div class="transaction-item">
+                                <div class="transaction-icon 
+                                    {% if transaction.operation_type == 'INCOME' %}income{% else %}expense{% endif %}">
+                                    <i class="fas {% if transaction.operation_type == 'INCOME' %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <div class="transaction-category">{{ transaction.category_name or 'Без категории' }}</div>
+                                    <div class="transaction-meta">
+                                        <span class="transaction-date">
+                                            {{ transaction.date_display or transaction.date.strftime('%d.%m.%Y') }}
+                                        </span>
+                                        {% if transaction.description %}
+                                        <span class="transaction-desc">• {{ transaction.description }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="transaction-amount 
+                                    {% if transaction.operation_type == 'INCOME' %}income{% else %}expense{% endif %}">
+                                    {% if transaction.operation_type == 'INCOME' %}+{% else %}-{% endif %}
+                                    {{ "₽{:,.2f}".format(transaction.amount) }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <p>Нет транзакций за этот месяц</p>
+                            <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
+                                Добавить первую транзакцию
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: All Time Stats -->
+            <div class="content-column">
+                <div class="section-header">
+                    <h2 class="section-title">За все время</h2>
+                </div>
+
+                <!-- All Time Statistics -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3 class="card-title">Общая статистика</h3>
+                            <span class="text-text-light">{{ current_user.transactions.count() }} транзакций</span>
+                        </div>
+                        <div class="stats-list">
+                            <div class="stat-item">
+                                <div class="stat-label">Общие доходы</div>
+                                <div class="stat-value text-success">{{ "₽{:,.2f}".format(total_stats.income) }}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Общие расходы</div>
+                                <div class="stat-value text-error">{{ "₽{:,.2f}".format(total_stats.expenses) }}</div>
+                            </div>
+                            <div class="stat-item total">
+                                <div class="stat-label">Общий баланс</div>
+                                <div class="stat-value {{ 'text-success' if total_stats.balance >= 0 else 'text-error' }}">
+                                    {{ "₽{:,.2f}".format(total_stats.balance) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Быстрые действия</h3>
+                        <div class="quick-actions">
+                            <a href="{{ url_for('transactions.add_transaction') }}" class="quick-action primary">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Новая транзакция</span>
+                            </a>
+                            <a href="{{ url_for('categories.add_category') }}" class="quick-action">
+                                <i class="fas fa-tag"></i>
+                                <span>Новая категория</span>
+                            </a>
+                            <a href="{{ url_for('transactions.list_transactions') }}" class="quick-action">
+                                <i class="fas fa-list"></i>
+                                <span>Все транзакции</span>
+                            </a>
+                            <a href="{{ url_for('categories.list_categories') }}" class="quick-action">
+                                <i class="fas fa-tags"></i>
+                                <span>Все категории</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Categories Summary -->
+                {% if categories_summary %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3 class="card-title">Категории за месяц</h3>
+                            <a href="{{ url_for('categories.add_category') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i>
+                                Добавить
+                            </a>
+                        </div>
+                        <div class="categories-list">
+                            {% for category_data in categories_summary %}
+                            {% set category = category_data.category %}
+                            <div class="category-item">
+                                <div class="category-info">
+                                    <div class="category-icon 
+                                        {% if category.operation_type == 'INCOME' %}income{% else %}expense{% endif %}">
+                                        <i class="fas {% if category.operation_type == 'INCOME' %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                                    </div>
+                                    <div class="category-details">
+                                        <div class="category-name">{{ category.name }}</div>
+                                        <div class="category-meta">{{ category_data.transaction_count }} транзакций</div>
+                                    </div>
+                                </div>
+                                <div class="category-amount">
+                                    <div class="amount {{ 'income' if category.operation_type == 'INCOME' else 'expense' }}">
+                                        {{ "₽{:,.2f}".format(category_data.total_amount) }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="empty-state">
+                            <i class="fas fa-tags"></i>
+                            <p>Нет категорий</p>
+                            <a href="{{ url_for('categories.add_category') }}" class="btn btn-primary btn-sm">
+                                Создать категорию
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+               
+            </div>
+        </div>
+    </div>
+</section>
+{% else %}
+<!-- Hero Section for Unauthenticated Users -->
+<section class="hero">
+    <div class="container">
+        <h1 class="hero-title">Контролируйте свои финансы</h1>
+        <p class="hero-subtitle">
+            Простой и удобный способ отслеживать доходы и расходы. 
+            Начните управлять своими финансами уже сегодня.
+        </p>
+        <div class="hero-actions">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                Начать бесплатно
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">
+                Войти в аккаунт
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="fas fa-chart-pie"></i>
+        </div>
+        <h3 class="feature-title">Визуальная аналитика</h3>
+        <p class="feature-description">
+            Наглядные круговые диаграммы покажут распределение ваших доходов и расходов по категориям. 
+            Понимайте свою финансовую картину с первого взгляда.
+        </p>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="fas fa-tags"></i>
+        </div>
+        <h3 class="feature-title">Умные категории</h3>
+        <p class="feature-description">
+            Создавайте собственные категории расходов и доходов. 
+            Гибкая система классификации для полного контроля над финансами.
+        </p>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">
+            <i class="fas fa-mobile-alt"></i>
+        </div>
+        <h3 class="feature-title">Доступ везде</h3>
+        <p class="feature-description">
+            Работайте с вашими финансами на любом устройстве. 
+            Адаптивный дизайн обеспечивает комфортное использование на телефоне и компьютере.
+        </p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% if current_user.is_authenticated %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Компактная диаграмма - объединенные доходы и расходы
+    const allCategories = {{ categories_summary | tojson }};
+    const monthlyIncome = {{ monthly_stats.income }};
+    const monthlyExpenses = {{ monthly_stats.expenses }};
+    const monthlyBalance = {{ monthly_stats.balance }};
+    const combinedChartEl = document.getElementById('combinedChart');
+    
+    if (combinedChartEl && allCategories.length > 0) {
+        const ctx = combinedChartEl.getContext('2d');
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: allCategories.map(cat => {
+                    const typeIcon = cat.category.operation_type === 'INCOME' ? '📈 ' : '📉 ';
+                    return typeIcon + cat.category.name;
+                }),
+                datasets: [{
+                    data: allCategories.map(cat => cat.total_amount),
+                    backgroundColor: allCategories.map((cat, index) => {
+                        // Для доходов используем зеленые оттенки, для расходов - красные
+                        if (cat.category.operation_type === 'INCOME') {
+                            return ['#10b981', '#22c55e', '#16a34a', '#15803d', '#166534'][index % 5];
+                        } else {
+                            return ['#ef4444', '#dc2626', '#b91c1c', '#991b1b', '#7f1d1d'][index % 5];
+                        }
+                    }),
+                    borderWidth: 2,
+                    borderColor: 'var(--background-light)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%', // Больше вырезаем для текста по центру
+                plugins: {
+                    legend: {
+                        display: false // Скрываем стандартную легенду, используем кастомную
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ₽${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

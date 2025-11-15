@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Транзакции — FinanceTrack{% endblock %}
+
+{% block content %}
+<section class="main">
+    <div class="container">
+        <div class="hero-compact">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Транзакции</h1>
+                    <p class="hero-subtitle">История всех ваших доходов и расходов</p>
+                </div>
+                <div class="hero-actions">
+                    <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Добавить транзакцию
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Фильтры и поиск -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="flex gap-3 items-center flex-wrap">
+                    <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+                        <select class="form-input" onchange="applyFilter('category', this.value)">
+                            <option value="">Все категории</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0; min-width: 150px;">
+                        <select class="form-input" onchange="applyFilter('type', this.value)">
+                            <option value="">Все типы</option>
+                            <option value="INCOME">Доходы</option>
+                            <option value="EXPENSE">Расходы</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+                        <input type="text" 
+                               class="form-input" 
+                               placeholder="Поиск по описанию..." 
+                               oninput="applySearch(this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Список транзакций -->
+        <div class="card">
+            <div class="card-body">
+                {% if transactions.items %}
+                <div class="transactions-list">
+                    {% for transaction in transactions.items %}
+                    <div class="transaction-item" data-category="{{ transaction.category_id }}" data-type="{{ transaction.operation_type }}">
+                        <div class="transaction-icon {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
+                            <i class="fas {{ 'fa-arrow-up' if transaction.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-category">{{ transaction.category.name }}</div>
+                            <div class="transaction-meta">
+                                <span class="transaction-date">
+                                    {{ transaction.date.strftime('%d.%m.%Y') }}
+                                </span>
+                                {% if transaction.description %}
+                                <span class="transaction-desc">• {{ transaction.description }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="transaction-amount {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
+                            {{ '+' if transaction.operation_type == 'INCOME' else '-' }}{{ "₽{:,.2f}".format(transaction.amount) }}
+                        </div>
+                        <div class="transaction-actions">
+                            <a href="{{ url_for('transactions.edit_transaction', transaction_id=transaction.id) }}" 
+                               class="btn btn-outline btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ url_for('transactions.delete_transaction', transaction_id=transaction.id) }}" 
+                                  method="POST" 
+                                  class="inline-form"
+                                  onsubmit="return confirm('Удалить эту транзакцию?')">
+                                <button type="submit" class="btn btn-outline btn-sm text-error">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Пагинация -->
+                {% if transactions.pages > 1 %}
+                <div class="pagination mt-4">
+                    <div class="flex gap-2 justify-center items-center">
+                        {% if transactions.has_prev %}
+                        <a href="{{ url_for('transactions.list_transactions', page=transactions.prev_num) }}" 
+                           class="btn btn-outline btn-sm">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        {% endif %}
+                        
+                        <span class="text-text-light text-sm">
+                            Страница {{ transactions.page }} из {{ transactions.pages }}
+                        </span>
+                        
+                        {% if transactions.has_next %}
+                        <a href="{{ url_for('transactions.list_transactions', page=transactions.next_num) }}" 
+                           class="btn btn-outline btn-sm">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-receipt"></i>
+                    <p>Транзакций пока нет</p>
+                    <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
+                        Добавить первую транзакцию
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Простая фильтрация на клиенте
+function applyFilter(type, value) {
+    const items = document.querySelectorAll('.transaction-item');
+    
+    items.forEach(item => {
+        let show = true;
+        
+        if (type === 'category' && value) {
+            show = show && item.getAttribute('data-category') === value;
+        }
+        
+        if (type === 'type' && value) {
+            show = show && item.getAttribute('data-type') === value;
+        }
+        
+        item.style.display = show ? 'flex' : 'none';
+    });
+}
+
+// Поиск по описанию
+function applySearch(query) {
+    const items = document.querySelectorAll('.transaction-item');
+    const searchTerm = query.toLowerCase();
+    
+    items.forEach(item => {
+        const description = item.querySelector('.transaction-desc')?.textContent.toLowerCase() || '';
+        const category = item.querySelector('.transaction-category')?.textContent.toLowerCase() || '';
+        
+        const match = description.includes(searchTerm) || category.includes(searchTerm);
+        item.style.display = match ? 'flex' : 'none';
+    });
+}
+
+// Сброс фильтров при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // Можно добавить сохранение состояния фильтров в localStorage
+});
+</script>
+
+<style>
+.transaction-actions {
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.transaction-item:hover .transaction-actions {
+    opacity: 1;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.pagination {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+</style>
+{% endblock %}

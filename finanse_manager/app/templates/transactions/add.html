@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить транзакцию — FinanceTrack{% endblock %}
+
+{% block content %}
+<section class="main">
+    <div class="container">
+        <div class="hero-compact">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Добавить транзакцию</h1>
+                    <p class="hero-subtitle">Заполните информацию о новой транзакции</p>
+                </div>
+                <div class="hero-actions">
+                    <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i>
+                        Назад к списку
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <!-- Основная форма -->
+            <div class="content-column">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" id="transactionForm">
+                            <!-- Тип операции -->
+                            <div class="form-group">
+                                <label class="form-label">Тип операции *</label>
+                                <div class="operation-type-selector">
+                                    <input type="radio" id="type_income" name="operation_type" value="INCOME" required>
+                                    <label for="type_income" class="operation-btn income">
+                                        <i class="fas fa-arrow-up"></i>
+                                        Доход
+                                    </label>
+                                    
+                                    <input type="radio" id="type_expense" name="operation_type" value="EXPENSE" required>
+                                    <label for="type_expense" class="operation-btn expense">
+                                        <i class="fas fa-arrow-down"></i>
+                                        Расход
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Сумма -->
+                            <div class="form-group">
+                                <label for="amount" class="form-label">Сумма *</label>
+                                <input type="number" 
+                                       id="amount" 
+                                       name="amount" 
+                                       class="form-input" 
+                                       step="0.01" 
+                                       min="0.01" 
+                                       placeholder="0.00" 
+                                       required
+                                       oninput="formatAmount(this)">
+                                <div class="quick-amounts mt-3">
+                                    <span class="quick-amounts-label">Быстрая сумма:</span>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(100)">100</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(500)">500</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(1000)">1 000</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(5000)">5 000</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Категория -->
+                            <div class="form-group">
+                                <label for="category_id" class="form-label">Категория *</label>
+                                <select id="category_id" name="category_id" class="form-input" required>
+                                    <option value="">Выберите категорию</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}" data-type="{{ category.operation_type }}">
+                                        {{ category.name }} ({{ 'Доход' if category.operation_type == 'INCOME' else 'Расход' }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if not categories %}
+                                <div class="form-text">
+                                    У вас нет категорий. 
+                                    <a href="{{ url_for('categories.list_categories') }}" class="text-link">Создайте первую категорию</a>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Описание -->
+                            <div class="form-group">
+                                <label for="description" class="form-label">Описание</label>
+                                <textarea id="description" 
+                                          name="description" 
+                                          class="form-input" 
+                                          rows="3" 
+                                          placeholder="Необязательное описание транзакции..."></textarea>
+                            </div>
+
+                            <!-- Дата -->
+                            <div class="form-group">
+                                <label for="date" class="form-label">Дата</label>
+                                <input type="date" 
+                                       id="date" 
+                                       name="date" 
+                                       class="form-input" 
+                                       value="{{ default_date }}">
+                            </div>
+
+                            <!-- Кнопки -->
+                            <div class="flex gap-3">
+                                <button type="submit" class="btn btn-primary w-full">
+                                    <i class="fas fa-plus"></i>
+                                    Добавить транзакцию
+                                </button>
+                                <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+                                    Отмена
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Боковая панель с подсказками -->
+            <div class="content-column">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Подсказки</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="category-icon income">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium">Доходы</div>
+                                    <div class="text-xs text-text-light">Зарплаты, переводы, инвестиции</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="category-icon expense">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium">Расходы</div>
+                                    <div class="text-xs text-text-light">Покупки, услуги, развлечения</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Последние транзакции -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Последние транзакции</h3>
+                        {% set recent_transactions = current_user.get_recent_activity(5) %}
+                        {% if recent_transactions %}
+                        <div class="transactions-list">
+                            {% for transaction in recent_transactions %}
+                            <div class="transaction-item">
+                                <div class="transaction-icon {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
+                                    <i class="fas {{ 'fa-arrow-up' if transaction.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <div class="transaction-category">{{ transaction.category_name }}</div>
+                                    <div class="transaction-meta">
+                                        <span class="transaction-date">{{ transaction.date_display }}</span>
+                                        {% if transaction.description %}
+                                        <span class="transaction-desc">• {{ transaction.description[:20] }}{% if transaction.description|length > 20 %}...{% endif %}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="transaction-amount {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
+                                    {{ '+' if transaction.operation_type == 'INCOME' else '-' }}{{ "₽{:,.0f}".format(transaction.amount) }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <p>Нет транзакций</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Форматирование суммы
+function formatAmount(input) {
+    // Убираем лишние нули и форматируем
+    let value = parseFloat(input.value);
+    if (!isNaN(value)) {
+        input.value = value.toFixed(2);
+    }
+}
+
+// Установка быстрой суммы
+function setAmount(amount) {
+    const amountInput = document.getElementById('amount');
+    amountInput.value = amount.toFixed(2);
+    amountInput.focus();
+}
+
+// Синхронизация типа операции с выбранной категорией
+document.getElementById('category_id').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const operationType = selectedOption.getAttribute('data-type');
+    
+    if (operationType) {
+        document.getElementById(`type_${operationType.toLowerCase()}`).checked = true;
+    }
+});
+
+// Синхронизация списка категорий при выборе типа операции
+document.querySelectorAll('input[name="operation_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const categorySelect = document.getElementById('category_id');
+        const selectedType = this.value;
+        
+        // Показываем только категории выбранного типа
+        for (let option of categorySelect.options) {
+            if (option.value === '') continue;
+            
+            const categoryType = option.getAttribute('data-type');
+            if (categoryType === selectedType) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
+            }
+        }
+        
+        // Сбрасываем выбор категории если она не подходит
+        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+        if (selectedOption.value && selectedOption.getAttribute('data-type') !== selectedType) {
+            categorySelect.value = '';
+        }
+    });
+});
+
+// Валидация формы
+document.getElementById('transactionForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const operationType = document.querySelector('input[name="operation_type"]:checked');
+    const categoryId = document.getElementById('category_id').value;
+    
+    let isValid = true;
+    
+    if (!operationType) {
+        alert('Выберите тип операции');
+        isValid = false;
+    } else if (!categoryId) {
+        alert('Выберите категорию');
+        isValid = false;
+    } else if (!amount || amount <= 0) {
+        alert('Введите корректную сумму');
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}
