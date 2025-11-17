@@ -5,14 +5,15 @@
 {% block content %}
 <section class="main">
     <div class="container">
-        <div class="hero-compact">
-            <div class="container">
-                <div class="hero-content">
-                    <h1 class="hero-title">Добавить транзакцию</h1>
-                    <p class="hero-subtitle">Заполните информацию о новой транзакции</p>
+        <!-- Заголовок и кнопка в новом оформлении -->
+        <div class="page-header">
+            <div class="page-header-content">
+                <div class="page-header-text">
+                    <h1 class="page-title">Добавить транзакцию</h1>
+                    <p class="page-description">Заполните информацию о новой транзакции</p>
                 </div>
-                <div class="hero-actions">
-                    <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+                <div class="page-header-actions">
+                    <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline btn-with-icon">
                         <i class="fas fa-arrow-left"></i>
                         Назад к списку
                     </a>
@@ -58,7 +59,7 @@
                                        oninput="formatAmount(this)">
                                 <div class="quick-amounts mt-3">
                                     <span class="quick-amounts-label">Быстрая сумма:</span>
-                                    <div class="flex gap-2 flex-wrap">
+                                    <div class="quick-amounts-buttons">
                                         <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(100)">100</button>
                                         <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(500)">500</button>
                                         <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(1000)">1 000</button>
@@ -107,8 +108,8 @@
                             </div>
 
                             <!-- Кнопки -->
-                            <div class="flex gap-3">
-                                <button type="submit" class="btn btn-primary w-full">
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-with-icon">
                                     <i class="fas fa-plus"></i>
                                     Добавить транзакцию
                                 </button>
@@ -126,23 +127,23 @@
                 <div class="card">
                     <div class="card-body">
                         <h3 class="card-title">Подсказки</h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center gap-2">
+                        <div class="tips-list">
+                            <div class="tip-item">
                                 <div class="category-icon income">
                                     <i class="fas fa-arrow-up"></i>
                                 </div>
-                                <div>
-                                    <div class="text-sm font-medium">Доходы</div>
-                                    <div class="text-xs text-text-light">Зарплаты, переводы, инвестиции</div>
+                                <div class="tip-content">
+                                    <div class="tip-title">Доходы</div>
+                                    <div class="tip-description">Зарплаты, переводы, инвестиции</div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="tip-item">
                                 <div class="category-icon expense">
                                     <i class="fas fa-arrow-down"></i>
                                 </div>
-                                <div>
-                                    <div class="text-sm font-medium">Расходы</div>
-                                    <div class="text-xs text-text-light">Покупки, услуги, развлечения</div>
+                                <div class="tip-content">
+                                    <div class="tip-title">Расходы</div>
+                                    <div class="tip-description">Покупки, услуги, развлечения</div>
                                 </div>
                             </div>
                         </div>
@@ -155,9 +156,9 @@
                         <h3 class="card-title">Последние транзакции</h3>
                         {% set recent_transactions = current_user.get_recent_activity(5) %}
                         {% if recent_transactions %}
-                        <div class="transactions-list">
+                        <div class="transactions-list compact">
                             {% for transaction in recent_transactions %}
-                            <div class="transaction-item">
+                            <div class="transaction-item compact">
                                 <div class="transaction-icon {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
                                     <i class="fas {{ 'fa-arrow-up' if transaction.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
                                 </div>
@@ -269,4 +270,164 @@ document.getElementById('transactionForm').addEventListener('submit', function(e
     }
 });
 </script>
+
+<style>
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.page-header-text {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.page-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.page-header-actions {
+    flex-shrink: 0;
+}
+
+.btn-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+/* Стили для быстрых сумм */
+.quick-amounts {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.quick-amounts-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.quick-amounts-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Стили для подсказок */
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.tip-content {
+    flex: 1;
+}
+
+.tip-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.tip-description {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+/* Стили для компактного списка транзакций */
+.transactions-list.compact .transaction-item.compact {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.transactions-list.compact .transaction-item.compact:last-child {
+    margin-bottom: 0;
+}
+
+/* Стили для кнопок формы */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.form-actions .btn {
+    flex: 1;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .page-header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .page-header-actions {
+        align-self: stretch;
+    }
+    
+    .btn-with-icon {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .quick-amounts-buttons {
+        justify-content: center;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .operation-type-selector {
+        flex-direction: column;
+    }
+    
+    .operation-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+</style>
 {% endblock %}

@@ -5,14 +5,15 @@
 {% block content %}
 <section class="main">
     <div class="container">
-        <div class="hero-compact">
-            <div class="container">
-                <div class="hero-content">
-                    <h1 class="hero-title">Категории</h1>
-                    <p class="hero-subtitle">Управление вашими категориями доходов и расходов</p>
+        <!-- Заголовок и кнопка в новом оформлении -->
+        <div class="page-header">
+            <div class="page-header-content">
+                <div class="page-header-text">
+                    <h1 class="page-title">Категории</h1>
+                    <p class="page-description">Управление вашими категориями доходов и расходов</p>
                 </div>
-                <div class="hero-actions">
-                    <a href="{{ url_for('categories.add_category') }}" class="btn btn-primary">
+                <div class="page-header-actions">
+                    <a href="{{ url_for('categories.add_category') }}" class="btn btn-primary btn-lg btn-with-icon">
                         <i class="fas fa-plus"></i>
                         Добавить категорию
                     </a>
@@ -53,7 +54,7 @@
             </div>
         </div>
 
-        <!-- Список категорий -->
+        <!-- Остальной контент без изменений -->
         <div class="content-grid">
             <!-- Категории доходов -->
             <div class="content-column">
@@ -192,6 +193,52 @@
 {% block scripts %}
 {{ super() }}
 <style>
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.page-header-text {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.page-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.page-header-actions {
+    flex-shrink: 0;
+}
+
+.btn-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-lg {
+    font-size: 1.1rem;
+}
+
 .category-actions {
     display: flex;
     gap: 0.5rem;
@@ -211,6 +258,24 @@
 
 .inline-form {
     display: inline;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .page-header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .page-header-actions {
+        align-self: stretch;
+    }
+    
+    .btn-with-icon {
+        justify-content: center;
+        width: 100%;
+    }
 }
 </style>
 {% endblock %}
