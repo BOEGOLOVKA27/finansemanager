@@ -6,6 +6,7 @@
     <title>{% block title %}FinanceTrack{% endblock %}</title>
     
     <!-- Styles -->
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     
@@ -42,6 +43,11 @@
                             Категории
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ url_for('main.feedback') }}" class="nav-link {% if request.endpoint == 'main.feedback' %}active{% endif %}">
+                            Обратная связь
+                        </a>
+                    </li>
                     <li class="nav-user-dropdown">
                         <button class="nav-user-toggle">
                             <i class="fas fa-user"></i>
@@ -52,6 +58,10 @@
                             <a href="{{ url_for('profile.profile') }}" class="nav-user-item">
                                 <i class="fas fa-cog"></i>
                                 Настройки профиля
+                            </a>
+                            <a href="{{ url_for('main.feedback') }}" class="nav-user-item">
+                                <i class="fas fa-envelope"></i>
+                                Обратная связь
                             </a>
                             <a href="{{ url_for('auth.logout') }}" class="nav-user-item text-error">
                                 <i class="fas fa-sign-out-alt"></i>
@@ -68,6 +78,11 @@
                     <li>
                         <a href="{{ url_for('auth.signup') }}" class="nav-link {% if request.endpoint == 'auth.signup' %}active{% endif %}">
                             Регистрация
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.feedback') }}" class="nav-link {% if request.endpoint == 'main.feedback' %}active{% endif %}">
+                            Обратная связь
                         </a>
                     </li>
                     {% endif %}

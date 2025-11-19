@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Обратная связь — FinanceTrack{% endblock %}
+
+{% block content %}
+<section class="main">
+    <div class="container">
+        <!-- Заголовок -->
+        <div class="page-header">
+            <div class="page-header-content">
+                <div class="page-header-text">
+                    <h1 class="page-title">Обратная связь</h1>
+                    <p class="page-description">Свяжитесь с нами по любым вопросам и предложениям</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <!-- Основной контент -->
+            <div class="content-column">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Свяжитесь с разработчиком</h3>
+                        <p class="mb-4">Если у вас есть вопросы, предложения по улучшению приложения или вы обнаружили ошибку, пожалуйста, свяжитесь с нами любым удобным способом:</p>
+                        
+                        <div class="contact-methods">
+                            <div class="contact-item">
+                                <div class="contact-icon email">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="contact-details">
+                                    <h4>Email</h4>
+                                    <p>lomeiko.vasily@yandex.com</p>
+                                    <a href="mailto:lomeiko.vasily@yandex.com" class="btn btn-outline btn-sm">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Написать письмо
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon telegram">
+                                    <i class="fab fa-telegram"></i>
+                                </div>
+                                <div class="contact-details">
+                                    <h4>Telegram</h4>
+                                    <p>@financetrack_support</p>
+                                    <a href="https://t.me/projectVaSD" target="_blank" class="btn btn-outline btn-sm">
+                                        <i class="fab fa-telegram"></i>
+                                        Написать в Telegram
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon whatsapp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="contact-details">
+                                    <h4>WhatsApp</h4>
+                                    <p>+7 (949) 471-08-07</p>
+                                    <a href="https://wa.me/79494710807" target="_blank" class="btn btn-outline btn-sm">
+                                        <i class="fab fa-whatsapp"></i>
+                                        Написать в WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Боковая панель -->
+            <div class="content-column">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Частые вопросы</h3>
+                        <div class="faq-list">
+                            <div class="faq-item">
+                                <h4>Как добавить новую категорию?</h4>
+                                <p>Перейдите в раздел "Категории" и нажмите кнопку "Добавить категорию".</p>
+                            </div>
+                            <div class="faq-item">
+                                <h4>Приложение доступно на мобильных?</h4>
+                                <p>Да, приложение адаптировано для мобильных устройств и работает в браузере.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Время ответа</h3>
+                        <div class="response-info">
+                            <div class="response-item">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <strong>В рабочие дни:</strong>
+                                    <p>1-4 часа</p>
+                                </div>
+                            </div>
+                            <div class="response-item">
+                               <i class="fas fa-clock"></i>
+                                <div>
+                                    <strong>В выходные:</strong>
+                                    <p>До 24 часов</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<style>
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.page-header-text {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.page-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Стили для контактов */
+.contact-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.contact-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.contact-icon.email {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--primary);
+}
+
+.contact-icon.telegram {
+    background: rgba(0, 136, 204, 0.2);
+    color: #0088cc;
+}
+
+.contact-icon.whatsapp {
+    background: rgba(37, 211, 102, 0.2);
+    color: #25d366;
+}
+
+.contact-details {
+    flex: 1;
+}
+
+.contact-details h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.contact-details p {
+    color: var(--text-light);
+    margin-bottom: 1rem;
+}
+
+/* Стили для FAQ */
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.faq-item {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.faq-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.faq-item h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.faq-item p {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Стили для информации о времени ответа */
+.response-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.response-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.response-item i {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.response-item strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.response-item p {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin: 0;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .page-header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .contact-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .contact-icon {
+        align-self: center;
+    }
+    
+    .response-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-item {
+        padding: 1rem;
+    }
+    
+    .contact-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+}
+</style>
+{% endblock %}

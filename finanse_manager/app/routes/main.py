@@ -74,3 +74,8 @@ def dashboard():
                          recent_activity=recent_activity,
                          current_year=now.year,
                          current_month=now.month)
+    
+@bp.route('/feedback')
+def feedback():
+    """Страница обратной связи"""
+    return render_template('feedback.html')
