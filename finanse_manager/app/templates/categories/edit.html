@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+
+{% block title %}Редактировать категорию — FinanceTrack{% endblock %}
+
+{% block content %}
+<section class="main">
+    <div class="container">
+<!-- Заголовок и кнопка в новом оформлении -->
+<div class="page-header">
+    <div class="page-header-content">
+        <div class="page-header-text">
+            <h1 class="page-title">Редактировать категорию</h1>
+            <p class="page-description">Измените информацию о категории</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{{ url_for('categories.list_categories') }}" class="btn btn-outline btn-with-icon">
+                <i class="fas fa-arrow-left"></i>
+                Назад к списку
+            </a>
+        </div>
+    </div>
+</div>
+
+        <div class="content-grid">
+            <!-- Основная форма -->
+            <div class="content-column">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Flash сообщения -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'error' if category == 'error' else 'success' }} mb-4">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" id="categoryForm">
+                            <!-- Название категории -->
+                            <div class="form-group">
+                                <label for="name" class="form-label">Название категории *</label>
+                                <input type="text" 
+                                       id="name" 
+                                       name="name" 
+                                       class="form-input" 
+                                       placeholder="Например: Зарплата, Продукты, Развлечения..." 
+                                       value="{{ category.name }}"
+                                       required
+                                       maxlength="100">
+                                <div class="form-text">
+                                    Название должно быть уникальным для вашего аккаунта
+                                </div>
+                            </div>
+
+                            <!-- Тип категории -->
+                            <div class="form-group">
+                                <label class="form-label">Тип категории *</label>
+                                <div class="operation-type-selector">
+                                    <input type="radio" 
+                                           id="type_income" 
+                                           name="operation_type" 
+                                           value="INCOME" 
+                                           required
+                                           {{ 'checked' if category.operation_type == 'INCOME' }}>
+                                    <label for="type_income" class="operation-btn income">
+                                        <i class="fas fa-arrow-up"></i>
+                                        Доход
+                                    </label>
+                                    
+                                    <input type="radio" 
+                                           id="type_expense" 
+                                           name="operation_type" 
+                                           value="EXPENSE" 
+                                           required
+                                           {{ 'checked' if category.operation_type == 'EXPENSE' }}>
+                                    <label for="type_expense" class="operation-btn expense">
+                                        <i class="fas fa-arrow-down"></i>
+                                        Расход
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Информация о категории -->
+                            <div class="card bg-background-lighter mt-4">
+                                <div class="card-body" style="padding: 1rem;">
+                                    <div class="flex items-center gap-3">
+                                        <div class="category-icon {{ 'income' if category.operation_type == 'INCOME' else 'expense' }}">
+                                            <i class="fas {{ 'fa-arrow-up' if category.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium">Информация о категории</div>
+                                            <div class="text-xs text-text-light">
+                                                Создана: {{ category.created_at.strftime('%d.%m.%Y') }} 
+                                                {% if category.updated_at != category.created_at %}
+                                                • Обновлена: {{ category.updated_at.strftime('%d.%m.%Y') }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопки -->
+                            <div class="form-actions mt-4">
+                                <button type="submit" class="btn btn-primary btn-with-icon w-full">
+                                    <i class="fas fa-save"></i>
+                                    Сохранить изменения
+                                </button>
+                                <div class="flex gap-3 mt-3">
+                                    <a href="{{ url_for('categories.list_categories') }}" class="btn btn-outline flex-1">
+                                        Отмена
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-outline text-error flex-1" 
+                                            onclick="confirmDelete()">
+                                        <i class="fas fa-trash"></i>
+                                        Удалить
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Боковая панель с подсказками -->
+            <div class="content-column">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Подсказки</h3>
+                        <div class="tips-list">
+                            <div class="tip-item">
+                                <div class="category-icon income">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                                <div class="tip-content">
+                                    <div class="tip-title">Категории доходов</div>
+                                    <div class="tip-description">Зарплата, Переводы, Инвестиции, Подарки, Возвраты</div>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="category-icon expense">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div class="tip-content">
+                                    <div class="tip-title">Категории расходов</div>
+                                    <div class="tip-description">Продукты, Транспорт, Развлечения, Здоровье, Комунальные</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Популярные категории -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Популярные категории</h3>
+                        <div class="popular-categories-list">
+                            <div class="popular-category income" onclick="fillForm('Зарплата', 'INCOME')">
+                                <i class="fas fa-briefcase"></i>
+                                <span>Зарплата</span>
+                            </div>
+                            <div class="popular-category expense" onclick="fillForm('Продукты', 'EXPENSE')">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Продукты</span>
+                            </div>
+                            <div class="popular-category expense" onclick="fillForm('Транспорт', 'EXPENSE')">
+                                <i class="fas fa-car"></i>
+                                <span>Транспорт</span>
+                            </div>
+                            <div class="popular-category expense" onclick="fillForm('Аренда', 'EXPENSE')">
+                                <i class="fas fa-home"></i>
+                                <span>Аренда</span>
+                            </div>
+                            <div class="popular-category income" onclick="fillForm('Подарки', 'INCOME')">
+                                <i class="fas fa-gift"></i>
+                                <span>Подарки</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Форма для удаления -->
+<form id="deleteForm" action="{{ url_for('categories.delete_category', category_id=category.id) }}" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Заполнение формы популярными категориями
+function fillForm(name, type) {
+    document.getElementById('name').value = name;
+    document.getElementById(`type_${type.toLowerCase()}`).checked = true;
+    
+    // Плавная прокрутка к форме
+    document.getElementById('name').focus();
+}
+
+// Подтверждение удаления
+function confirmDelete() {
+    if (confirm('Вы уверены, что хотите удалить категорию «{{ category.name }}»?\n\nВсе транзакции в этой категории будут перемещены в "Без категории".')) {
+        document.getElementById('deleteForm').submit();
+    }
+}
+
+// Валидация формы
+document.getElementById('categoryForm').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const operationType = document.querySelector('input[name="operation_type"]:checked');
+    
+    let isValid = true;
+    
+    if (!name) {
+        alert('Введите название категории');
+        isValid = false;
+    } else if (!operationType) {
+        alert('Выберите тип категории');
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        e.preventDefault();
+    }
+});
+
+// Автоматическое отображение ошибок при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('name');
+    const operationTypeInputs = document.querySelectorAll('input[name="operation_type"]');
+    
+    // Если есть ошибки, подсвечиваем поля
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% if category == 'error' %}
+                    nameInput.classList.add('invalid');
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+});
+</script>
+
+<style>
+/* Дополнительные стили для страницы редактирования */
+.page-header-modern {
+    background: linear-gradient(135deg, var(--background-light) 0%, var(--background) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 0 2rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gradient);
+}
+
+.header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 3rem;
+    margin-bottom: 2rem;
+}
+
+.header-content {
+    flex: 1;
+    max-width: 600px;
+}
+
+.header-badge {
+    display: inline-block;
+    background: var(--gradient);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: var(--text);
+    line-height: 1.1;
+}
+
+.header-description {
+    font-size: 1.125rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.header-action {
+    flex-shrink: 0;
+}
+
+.btn-modern-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--gradient);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-modern-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+    color: white;
+}
+
+.btn-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Стили для подсказок */
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.tip-content {
+    flex: 1;
+}
+
+.tip-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.tip-description {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+/* Стили для популярных категорий */
+.popular-categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.popular-category {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.popular-category:hover {
+    background: var(--bg-hover);
+    transform: translateX(5px);
+    border-color: var(--primary);
+}
+
+.popular-category.income {
+    border-left: 4px solid var(--success);
+}
+
+.popular-category.expense {
+    border-left: 4px solid var(--error);
+}
+
+.popular-category i {
+    width: 1rem;
+    text-align: center;
+    color: var(--text-light);
+}
+
+.popular-category span {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* Стили для кнопок формы */
+.form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-actions .btn {
+    flex: 1;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .page-header-modern {
+        padding: 2rem 0 1.5rem 0;
+    }
+    
+    .header-main {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+    
+    .header-content {
+        max-width: none;
+    }
+    
+    .header-title {
+        font-size: 2rem;
+    }
+    
+    .header-description {
+        font-size: 1rem;
+    }
+    
+    .header-action {
+        width: 100%;
+    }
+    
+    .btn-modern-primary {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .operation-type-selector {
+        flex-direction: column;
+    }
+    
+    .operation-btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .popular-category {
+        padding: 1rem;
+    }
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.page-header-text {
+    flex: 1;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.page-description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.page-header-actions {
+    flex-shrink: 0;
+}
+
+.btn-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .page-header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .page-header-actions {
+        align-self: stretch;
+    }
+    
+    .btn-with-icon {
+        justify-content: center;
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

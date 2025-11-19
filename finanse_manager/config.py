@@ -7,6 +7,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY')
+    WTF_CSRF_ENABLED = True
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI')
 
     MAIL_SERVER = os.getenv('MAIL_SERVER')

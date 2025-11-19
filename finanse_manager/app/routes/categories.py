@@ -90,42 +90,44 @@ def edit_category(category_id):
     ).first_or_404()
     
     if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        operation_type = request.form.get('operation_type')
+        
+        # Валидация
+        errors = []
+        if not name:
+            errors.append('Введите название категории')
+        
+        if not operation_type or operation_type not in ['INCOME', 'EXPENSE']:
+            errors.append('Выберите тип категории')
+        
+        # Проверяем уникальность названия (исключая текущую категорию)
+        if name and Category.query.filter(
+            Category.name == name,
+            Category.user_id == current_user.id,
+            Category.id != category_id
+        ).first():
+            errors.append('Категория с таким названием уже существует')
+        
+        if errors:
+            for error in errors:
+                flash(error, 'error')
+            return render_template('categories/edit.html', category=category)
+        
         try:
-            name = request.form.get('name', '').strip()
-            operation_type = request.form.get('operation_type')
-            
-            # Валидация
-            if not name:
-                flash('Введите название категории', 'error')
-                return render_template('categories/edit.html', category=category)
-            
-            if not operation_type or operation_type not in ['INCOME', 'EXPENSE']:
-                flash('Выберите тип категории', 'error')
-                return render_template('categories/edit.html', category=category)
-            
-            # Проверяем уникальность названия (исключая текущую категорию)
-            existing_category = Category.query.filter(
-                Category.name == name,
-                Category.user_id == current_user.id,
-                Category.id != category_id
-            ).first()
-            
-            if existing_category:
-                flash('Категория с таким названием уже существует', 'error')
-                return render_template('categories/edit.html', category=category)
-            
             # Обновляем категорию
             category.name = name
             category.operation_type = operation_type
             
             db.session.commit()
-            
             flash('Категория успешно обновлена!', 'success')
             return redirect(url_for('categories.list_categories'))
             
         except Exception as e:
             db.session.rollback()
             flash('Ошибка при обновлении категории', 'error')
+            # Логирование ошибки для отладки
+            # current_app.logger.error(f'Error updating category: {str(e)}')
     
     return render_template('categories/edit.html', category=category)
 
@@ -167,14 +169,29 @@ def category_transactions(category_id):
     page = request.args.get('page', 1, type=int)
     per_page = 20
     
+    # Получаем транзакции с пагинацией
     transactions = category.transactions.order_by(
         Transaction.date.desc()
     ).paginate(page=page, per_page=per_page, error_out=False)
     
+    # Вычисляем общую сумму транзакций в категории
+    total_amount = db.session.query(db.func.sum(Transaction.amount)).filter(
+        Transaction.category_id == category_id,
+        Transaction.user_id == current_user.id
+    ).scalar() or 0
+    
+    # Русские названия для типов операций
+    operation_type_names = {
+        'INCOME': 'Доход',
+        'EXPENSE': 'Расход'
+    }
+    
     return render_template('categories/transactions.html',
                          category=category,
-                         transactions=transactions)
-
+                         transactions=transactions,
+                         total_amount=total_amount,
+                         operation_type_names=operation_type_names)
+    
 # API для получения категорий по типу
 @bp.route('/api/by-type/<operation_type>')
 @login_required

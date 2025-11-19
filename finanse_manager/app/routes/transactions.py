@@ -116,33 +116,45 @@ def edit_transaction(transaction_id):
     categories = current_user.categories.all()
     
     if request.method == 'POST':
+        amount_str = request.form.get('amount', '').strip()
+        description = request.form.get('description', '').strip()
+        category_id = request.form.get('category_id')
+        date_str = request.form.get('date')
+        
+        # Валидация
+        errors = []
+        
+        # Валидация суммы
         try:
-            amount = float(request.form.get('amount', 0))
-            description = request.form.get('description', '').strip()
-            category_id = request.form.get('category_id')
-            date_str = request.form.get('date')
-            
-            # Валидация
-            if not amount or amount <= 0:
-                flash('Сумма должна быть положительным числом', 'error')
-                return render_template('transactions/edit.html',
-                                     transaction=transaction,
-                                     categories=categories)
-            
-            if not category_id:
-                flash('Выберите категорию', 'error')
-                return render_template('transactions/edit.html',
-                                     transaction=transaction,
-                                     categories=categories)
-            
-            # Проверяем категорию
+            amount = float(amount_str) if amount_str else 0
+            if amount <= 0:
+                errors.append('Сумма должна быть положительным числом')
+        except (ValueError, TypeError):
+            errors.append('Некорректный формат суммы')
+        
+        # Валидация категории
+        if not category_id:
+            errors.append('Выберите категорию')
+        else:
             category = Category.query.filter_by(id=category_id, user_id=current_user.id).first()
             if not category:
-                flash('Выбранная категория не найдена', 'error')
-                return render_template('transactions/edit.html',
-                                     transaction=transaction,
-                                     categories=categories)
-            
+                errors.append('Выбранная категория не найдена')
+        
+        # Валидация даты
+        if date_str:
+            try:
+                date = datetime.strptime(date_str, '%Y-%m-%d')
+            except ValueError:
+                errors.append('Некорректный формат даты')
+        
+        if errors:
+            for error in errors:
+                flash(error, 'error')
+            return render_template('transactions/edit.html',
+                                 transaction=transaction,
+                                 categories=categories)
+        
+        try:
             # Обновляем транзакцию
             transaction.amount = amount
             transaction.description = description
@@ -157,11 +169,11 @@ def edit_transaction(transaction_id):
             flash('Транзакция успешно обновлена!', 'success')
             return redirect(url_for('transactions.list_transactions'))
             
-        except ValueError:
-            flash('Некорректный формат суммы', 'error')
         except Exception as e:
             db.session.rollback()
             flash('Ошибка при обновлении транзакции', 'error')
+            # Логирование для отладки
+            # current_app.logger.error(f'Error updating transaction: {str(e)}')
     
     return render_template('transactions/edit.html',
                          transaction=transaction,
