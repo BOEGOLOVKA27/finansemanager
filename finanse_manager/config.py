@@ -26,9 +26,10 @@ class Config:
 class DevelopmentConfig(Config):
     """Конфигурация для разработки"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://admin:111111@localhost/finance_tracker'
+
 
 
 config = {
     'default': DevelopmentConfig
 }
+#CREATE USER 'admin'@'%' IDENTIFIED BY 'Boegolovka_27';

@@ -27,61 +27,63 @@
                 <div class="card">
                     <div class="card-body">
                         <form method="POST" id="categoryForm">
-                            <!-- Название категории -->
-                            <div class="form-group">
-                                <label for="name" class="form-label">Название категории *</label>
-                                <input type="text" 
-                                       id="name" 
-                                       name="name" 
-                                       class="form-input" 
-                                       placeholder="Например: Зарплата, Продукты, Развлечения..." 
-                                       required
-                                       maxlength="100">
-                                <div class="form-text">
-                                    Название должно быть уникальным для вашего аккаунта
-                                </div>
-                            </div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    
+    <!-- Название категории -->
+    <div class="form-group">
+        <label for="name" class="form-label">Название категории *</label>
+        <input type="text" 
+               id="name" 
+               name="name" 
+               class="form-input" 
+               placeholder="Например: Зарплата, Продукты, Развлечения..." 
+               required
+               maxlength="100">
+        <div class="form-text">
+            Название должно быть уникальным для вашего аккаунта
+        </div>
+    </div>
 
-                            <!-- Тип категории -->
-                            <div class="form-group">
-                                <label class="form-label">Тип категории *</label>
-                                <div class="operation-type-selector">
-                                    {% set default_type = request.args.get('type', 'EXPENSE') %}
-                                    <input type="radio" 
-                                           id="type_income" 
-                                           name="operation_type" 
-                                           value="INCOME" 
-                                           required
-                                           {{ 'checked' if default_type == 'INCOME' }}>
-                                    <label for="type_income" class="operation-btn income">
-                                        <i class="fas fa-arrow-up"></i>
-                                        Доход
-                                    </label>
-                                    
-                                    <input type="radio" 
-                                           id="type_expense" 
-                                           name="operation_type" 
-                                           value="EXPENSE" 
-                                           required
-                                           {{ 'checked' if default_type == 'EXPENSE' }}>
-                                    <label for="type_expense" class="operation-btn expense">
-                                        <i class="fas fa-arrow-down"></i>
-                                        Расход
-                                    </label>
-                                </div>
-                            </div>
+    <!-- Тип категории -->
+    <div class="form-group">
+        <label class="form-label">Тип категории *</label>
+        <div class="operation-type-selector">
+            {% set default_type = request.args.get('type', 'EXPENSE') %}
+            <input type="radio" 
+                   id="type_income" 
+                   name="operation_type" 
+                   value="INCOME" 
+                   required
+                   {{ 'checked' if default_type == 'INCOME' }}>
+            <label for="type_income" class="operation-btn income">
+                <i class="fas fa-arrow-up"></i>
+                Доход
+            </label>
+            
+            <input type="radio" 
+                   id="type_expense" 
+                   name="operation_type" 
+                   value="EXPENSE" 
+                   required
+                   {{ 'checked' if default_type == 'EXPENSE' }}>
+            <label for="type_expense" class="operation-btn expense">
+                <i class="fas fa-arrow-down"></i>
+                Расход
+            </label>
+        </div>
+    </div>
 
-                            <!-- Кнопки -->
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary btn-with-icon">
-                                    <i class="fas fa-plus"></i>
-                                    Создать категорию
-                                </button>
-                                <a href="{{ url_for('categories.list_categories') }}" class="btn btn-outline">
-                                    Отмена
-                                </a>
-                            </div>
-                        </form>
+    <!-- Кнопки -->
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-with-icon">
+            <i class="fas fa-plus"></i>
+            Создать категорию
+        </button>
+        <a href="{{ url_for('categories.list_categories') }}" class="btn btn-outline">
+            Отмена
+        </a>
+    </div>
+</form>
                     </div>
                 </div>
             </div>

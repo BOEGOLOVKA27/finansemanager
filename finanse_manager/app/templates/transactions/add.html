@@ -27,97 +27,99 @@
                 <div class="card">
                     <div class="card-body">
                         <form method="POST" id="transactionForm">
-                            <!-- Тип операции -->
-                            <div class="form-group">
-                                <label class="form-label">Тип операции *</label>
-                                <div class="operation-type-selector">
-                                    <input type="radio" id="type_income" name="operation_type" value="INCOME" required>
-                                    <label for="type_income" class="operation-btn income">
-                                        <i class="fas fa-arrow-up"></i>
-                                        Доход
-                                    </label>
-                                    
-                                    <input type="radio" id="type_expense" name="operation_type" value="EXPENSE" required>
-                                    <label for="type_expense" class="operation-btn expense">
-                                        <i class="fas fa-arrow-down"></i>
-                                        Расход
-                                    </label>
-                                </div>
-                            </div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    
+    <!-- Тип операции -->
+    <div class="form-group">
+        <label class="form-label">Тип операции *</label>
+        <div class="operation-type-selector">
+            <input type="radio" id="type_income" name="operation_type" value="INCOME" required>
+            <label for="type_income" class="operation-btn income">
+                <i class="fas fa-arrow-up"></i>
+                Доход
+            </label>
+            
+            <input type="radio" id="type_expense" name="operation_type" value="EXPENSE" required>
+            <label for="type_expense" class="operation-btn expense">
+                <i class="fas fa-arrow-down"></i>
+                Расход
+            </label>
+        </div>
+    </div>
 
-                            <!-- Сумма -->
-                            <div class="form-group">
-                                <label for="amount" class="form-label">Сумма *</label>
-                                <input type="number" 
-                                       id="amount" 
-                                       name="amount" 
-                                       class="form-input" 
-                                       step="0.01" 
-                                       min="0.01" 
-                                       placeholder="0.00" 
-                                       required
-                                       oninput="formatAmount(this)">
-                                <div class="quick-amounts mt-3">
-                                    <span class="quick-amounts-label">Быстрая сумма:</span>
-                                    <div class="quick-amounts-buttons">
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(100)">100</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(500)">500</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(1000)">1 000</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(5000)">5 000</button>
-                                    </div>
-                                </div>
-                            </div>
+    <!-- Сумма -->
+    <div class="form-group">
+        <label for="amount" class="form-label">Сумма *</label>
+        <input type="number" 
+               id="amount" 
+               name="amount" 
+               class="form-input" 
+               step="0.01" 
+               min="0.01" 
+               placeholder="0.00" 
+               required
+               oninput="formatAmount(this)">
+        <div class="quick-amounts mt-3">
+            <span class="quick-amounts-label">Быстрая сумма:</span>
+            <div class="quick-amounts-buttons">
+                <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(100)">100</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(500)">500</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(1000)">1 000</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(5000)">5 000</button>
+            </div>
+        </div>
+    </div>
 
-                            <!-- Категория -->
-                            <div class="form-group">
-                                <label for="category_id" class="form-label">Категория *</label>
-                                <select id="category_id" name="category_id" class="form-input" required>
-                                    <option value="">Выберите категорию</option>
-                                    {% for category in categories %}
-                                    <option value="{{ category.id }}" data-type="{{ category.operation_type }}">
-                                        {{ category.name }} ({{ 'Доход' if category.operation_type == 'INCOME' else 'Расход' }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                {% if not categories %}
-                                <div class="form-text">
-                                    У вас нет категорий. 
-                                    <a href="{{ url_for('categories.list_categories') }}" class="text-link">Создайте первую категорию</a>
-                                </div>
-                                {% endif %}
-                            </div>
+    <!-- Категория -->
+    <div class="form-group">
+        <label for="category_id" class="form-label">Категория *</label>
+        <select id="category_id" name="category_id" class="form-input" required>
+            <option value="">Выберите категорию</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}" data-type="{{ category.operation_type }}">
+                {{ category.name }} ({{ 'Доход' if category.operation_type == 'INCOME' else 'Расход' }})
+            </option>
+            {% endfor %}
+        </select>
+        {% if not categories %}
+        <div class="form-text">
+            У вас нет категорий. 
+            <a href="{{ url_for('categories.list_categories') }}" class="text-link">Создайте первую категорию</a>
+        </div>
+        {% endif %}
+    </div>
 
-                            <!-- Описание -->
-                            <div class="form-group">
-                                <label for="description" class="form-label">Описание</label>
-                                <textarea id="description" 
-                                          name="description" 
-                                          class="form-input" 
-                                          rows="3" 
-                                          placeholder="Необязательное описание транзакции..."></textarea>
-                            </div>
+    <!-- Описание -->
+    <div class="form-group">
+        <label for="description" class="form-label">Описание</label>
+        <textarea id="description" 
+                  name="description" 
+                  class="form-input" 
+                  rows="3" 
+                  placeholder="Необязательное описание транзакции..."></textarea>
+    </div>
 
-                            <!-- Дата -->
-                            <div class="form-group">
-                                <label for="date" class="form-label">Дата</label>
-                                <input type="date" 
-                                       id="date" 
-                                       name="date" 
-                                       class="form-input" 
-                                       value="{{ default_date }}">
-                            </div>
+    <!-- Дата -->
+    <div class="form-group">
+        <label for="date" class="form-label">Дата</label>
+        <input type="date" 
+               id="date" 
+               name="date" 
+               class="form-input" 
+               value="{{ default_date }}">
+    </div>
 
-                            <!-- Кнопки -->
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary btn-with-icon">
-                                    <i class="fas fa-plus"></i>
-                                    Добавить транзакцию
-                                </button>
-                                <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
-                                    Отмена
-                                </a>
-                            </div>
-                        </form>
+    <!-- Кнопки -->
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-with-icon">
+            <i class="fas fa-plus"></i>
+            Добавить транзакцию
+        </button>
+        <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+            Отмена
+        </a>
+    </div>
+</form>
                     </div>
                 </div>
             </div>

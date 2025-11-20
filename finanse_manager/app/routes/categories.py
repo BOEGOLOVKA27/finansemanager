@@ -35,48 +35,41 @@ def list_categories():
 def add_category():
     """Добавление новой категории"""
     if request.method == 'POST':
-        try:
-            name = request.form.get('name', '').strip()
-            operation_type = request.form.get('operation_type')
-            color = request.form.get('color', '#3b82f6')
-            icon = request.form.get('icon', 'fas fa-tag')
-            
-            # Валидация
-            if not name:
-                flash('Введите название категории', 'error')
-                return render_template('categories/add.html')
-            
-            if not operation_type or operation_type not in ['INCOME', 'EXPENSE']:
-                flash('Выберите тип категории', 'error')
-                return render_template('categories/add.html')
-            
-            # Проверяем уникальность названия для пользователя
-            existing_category = Category.query.filter_by(
-                name=name, 
-                user_id=current_user.id
-            ).first()
-            
-            if existing_category:
-                flash('Категория с таким названием уже существует', 'error')
-                return render_template('categories/add.html')
-            
-            # Создаем категорию
-            category = Category(
-                name=name,
-                operation_type=operation_type,
-                user_id=current_user.id
-            )
-            
-            # Сохраняем в БД
-            db.session.add(category)
-            db.session.commit()
-            
-            flash('Категория успешно создана!', 'success')
-            return redirect(url_for('categories.list_categories'))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash('Ошибка при создании категории', 'error')
+        name = request.form.get('name', '').strip()
+        operation_type = request.form.get('operation_type')
+        
+        # Валидация
+        if not name:
+            flash('Введите название категории', 'error')
+            return render_template('categories/add.html')
+        
+        if not operation_type or operation_type not in ['INCOME', 'EXPENSE']:
+            flash('Выберите тип категории', 'error')
+            return render_template('categories/add.html')
+        
+        # Проверяем уникальность названия для пользователя
+        existing_category = Category.query.filter_by(
+            name=name, 
+            user_id=current_user.id
+        ).first()
+        
+        if existing_category:
+            flash('Категория с таким названием уже существует', 'error')
+            return render_template('categories/add.html')
+        
+        # Создаем категорию
+        category = Category(
+            name=name,
+            operation_type=operation_type,
+            user_id=current_user.id
+        )
+        
+        # Сохраняем в БД
+        db.session.add(category)
+        db.session.commit()
+        
+        flash('Категория успешно создана!', 'success')
+        return redirect(url_for('categories.list_categories'))
     
     return render_template('categories/add.html')
 
