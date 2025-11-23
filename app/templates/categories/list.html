@@ -99,6 +99,7 @@
                                               method="POST" 
                                               class="inline-form"
                                               onsubmit="return confirm('Удалить категорию «{{ category.name }}»?')">
+                                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn-link btn-sm text-error" title="Удалить">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -164,6 +165,7 @@
                                               method="POST" 
                                               class="inline-form"
                                               onsubmit="return confirm('Удалить категорию «{{ category.name }}»?')">
+                                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn-link btn-sm text-error" title="Удалить">
                                                 <i class="fas fa-trash"></i>
                                             </button>

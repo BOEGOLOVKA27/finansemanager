@@ -38,6 +38,8 @@
                         {% endwith %}
 
                         <form method="POST" id="categoryForm">
+                            
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <!-- Название категории -->
                             <div class="form-group">
                                 <label for="name" class="form-label">Название категории *</label>
@@ -189,6 +191,7 @@
 <!-- Форма для удаления -->
 <form id="deleteForm" action="{{ url_for('categories.delete_category', category_id=category.id) }}" method="POST" style="display: none;">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    
 </form>
 {% endblock %}
 

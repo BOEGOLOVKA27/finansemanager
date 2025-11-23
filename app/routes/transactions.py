@@ -36,10 +36,20 @@ def add_transaction():
     # Получаем категории пользователя
     categories = current_user.categories.all()
     
+    # Популярные категории для быстрого выбора
+    popular_categories = [
+        {'name': 'Зарплата', 'operation_type': 'INCOME', 'icon': 'fa-briefcase'},
+        {'name': 'Продукты', 'operation_type': 'EXPENSE', 'icon': 'fa-shopping-cart'},
+        {'name': 'Транспорт', 'operation_type': 'EXPENSE', 'icon': 'fa-car'},
+        {'name': 'Развлечения', 'operation_type': 'EXPENSE', 'icon': 'fa-film'},
+        {'name': 'Здоровье', 'operation_type': 'EXPENSE', 'icon': 'fa-heart'},
+    ]
+    
     if request.method == 'POST':
         try:
             # Получаем данные из формы
-            amount = float(request.form.get('amount', 0))
+            amount_str = request.form.get('amount', '0').replace(' ', '').replace(',', '.')
+            amount = float(amount_str)
             description = request.form.get('description', '').strip()
             operation_type = request.form.get('operation_type')
             category_id = request.form.get('category_id')
@@ -48,26 +58,41 @@ def add_transaction():
             # Валидация
             if not amount or amount <= 0:
                 flash('Сумма должна быть положительным числом', 'error')
-                return render_template('transactions/add.html', categories=categories)
+                return render_template('transactions/add.html', 
+                                     categories=categories,
+                                     popular_categories=popular_categories,
+                                     default_date=datetime.utcnow().strftime('%Y-%m-%d'))
             
             if not operation_type or operation_type not in ['INCOME', 'EXPENSE']:
                 flash('Выберите тип операции', 'error')
-                return render_template('transactions/add.html', categories=categories)
+                return render_template('transactions/add.html',
+                                     categories=categories,
+                                     popular_categories=popular_categories,
+                                     default_date=datetime.utcnow().strftime('%Y-%m-%d'))
             
             if not category_id:
                 flash('Выберите категорию', 'error')
-                return render_template('transactions/add.html', categories=categories)
+                return render_template('transactions/add.html',
+                                     categories=categories,
+                                     popular_categories=popular_categories,
+                                     default_date=datetime.utcnow().strftime('%Y-%m-%d'))
             
             # Проверяем существование категории
             category = Category.query.filter_by(id=category_id, user_id=current_user.id).first()
             if not category:
                 flash('Выбранная категория не найдена', 'error')
-                return render_template('transactions/add.html', categories=categories)
+                return render_template('transactions/add.html',
+                                     categories=categories,
+                                     popular_categories=popular_categories,
+                                     default_date=datetime.utcnow().strftime('%Y-%m-%d'))
             
             # Проверяем соответствие типа операции категории
             if category.operation_type != operation_type:
                 flash('Тип операции не соответствует выбранной категории', 'error')
-                return render_template('transactions/add.html', categories=categories)
+                return render_template('transactions/add.html',
+                                     categories=categories,
+                                     popular_categories=popular_categories,
+                                     default_date=datetime.utcnow().strftime('%Y-%m-%d'))
             
             # Парсим дату
             if date_str:
@@ -94,14 +119,20 @@ def add_transaction():
             
         except ValueError:
             flash('Некорректный формат суммы', 'error')
+            return render_template('transactions/add.html',
+                                 categories=categories,
+                                 popular_categories=popular_categories,
+                                 default_date=datetime.utcnow().strftime('%Y-%m-%d'))
         except Exception as e:
             db.session.rollback()
             flash('Ошибка при добавлении транзакции', 'error')
+            current_app.logger.error(f'Error adding transaction: {str(e)}')
     
     # Для GET запроса - текущая дата по умолчанию
     default_date = datetime.utcnow().strftime('%Y-%m-%d')
     return render_template('transactions/add.html',
                          categories=categories,
+                         popular_categories=popular_categories,
                          default_date=default_date)
 
 @bp.route('/<int:transaction_id>/edit', methods=['GET', 'POST'])
@@ -198,47 +229,49 @@ def delete_transaction(transaction_id):
     
     return redirect(url_for('transactions.list_transactions'))
 
-# API endpoint для быстрого добавления транзакций
-@bp.route('/quick-add', methods=['POST'])
+@bp.route('/category/create_ajax', methods=['POST'])
 @login_required
-def quick_add():
-    """Быстрое добавление транзакции (для AJAX)"""
+def create_category_ajax():
+    """Создание категории через AJAX"""
+    name = request.form.get('name', '').strip()
+    operation_type = request.form.get('operation_type')
+    
+    # Валидация
+    errors = []
+    if not name:
+        errors.append('Введите название категории')
+    
+    if not operation_type or operation_type not in ['INCOME', 'EXPENSE']:
+        errors.append('Выберите тип категории')
+    
+    # Проверяем уникальность названия
+    if name and Category.query.filter(
+        Category.name == name,
+        Category.user_id == current_user.id
+    ).first():
+        errors.append('Категория с таким названием уже существует')
+    
+    if errors:
+        return jsonify({'success': False, 'errors': errors})
+    
     try:
-        data = request.get_json()
-        
-        amount = float(data.get('amount', 0))
-        category_id = data.get('category_id')
-        description = data.get('description', '').strip()
-        
-        if not amount or amount <= 0:
-            return jsonify({'success': False, 'error': 'Некорректная сумма'})
-        
-        if not category_id:
-            return jsonify({'success': False, 'error': 'Выберите категорию'})
-        
-        # Получаем категорию для определения типа операции
-        category = Category.query.filter_by(id=category_id, user_id=current_user.id).first()
-        if not category:
-            return jsonify({'success': False, 'error': 'Категория не найдена'})
-        
-        transaction = Transaction(
-            amount=amount,
-            description=description,
-            operation_type=category.operation_type,
-            category_id=category_id,
-            user_id=current_user.id,
-            date=datetime.utcnow()
+        category = Category(
+            name=name,
+            operation_type=operation_type,
+            user_id=current_user.id
         )
-        
-        db.session.add(transaction)
+        db.session.add(category)
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'Транзакция добавлена',
-            'transaction': transaction.to_dict()
+            'category': {
+                'id': category.id,
+                'name': category.name,
+                'operation_type': category.operation_type
+            }
         })
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': 'Ошибка при добавлении'})
+        return jsonify({'success': False, 'errors': ['Ошибка при создании категории']})

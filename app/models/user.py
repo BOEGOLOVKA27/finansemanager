@@ -233,4 +233,9 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.login}>'
-
+    
+    def get_recent_activity(self, limit=5):
+        """Получить последние транзакции пользователя"""
+        return Transaction.query.filter_by(user_id=self.id)\
+            .order_by(Transaction.date.desc(), Transaction.created_at.desc())\
+            .limit(limit).all()

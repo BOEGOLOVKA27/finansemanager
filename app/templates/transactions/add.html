@@ -5,7 +5,7 @@
 {% block content %}
 <section class="main">
     <div class="container">
-        <!-- Заголовок и кнопка в новом оформлении -->
+        <!-- Заголовок и кнопка -->
         <div class="page-header">
             <div class="page-header-content">
                 <div class="page-header-text">
@@ -26,105 +26,137 @@
             <div class="content-column">
                 <div class="card">
                     <div class="card-body">
+                        <!-- Flash сообщения -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'error' if category == 'error' else 'success' }} mb-4">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
                         <form method="POST" id="transactionForm">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    
-    <!-- Тип операции -->
-    <div class="form-group">
-        <label class="form-label">Тип операции *</label>
-        <div class="operation-type-selector">
-            <input type="radio" id="type_income" name="operation_type" value="INCOME" required>
-            <label for="type_income" class="operation-btn income">
-                <i class="fas fa-arrow-up"></i>
-                Доход
-            </label>
-            
-            <input type="radio" id="type_expense" name="operation_type" value="EXPENSE" required>
-            <label for="type_expense" class="operation-btn expense">
-                <i class="fas fa-arrow-down"></i>
-                Расход
-            </label>
-        </div>
-    </div>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <!-- Тип операции -->
+                            <div class="form-group">
+                                <label class="form-label">Тип операции *</label>
+                                <div class="operation-type-selector">
+                                    <input type="radio" id="type_income" name="operation_type" value="INCOME" required 
+                                           {{ 'checked' if request.form.get('operation_type') == 'INCOME' }}>
+                                    <label for="type_income" class="operation-btn income">
+                                        <i class="fas fa-arrow-up"></i>
+                                        Доход
+                                    </label>
+                                    
+                                    <input type="radio" id="type_expense" name="operation_type" value="EXPENSE" required
+                                           {{ 'checked' if not request.form.get('operation_type') or request.form.get('operation_type') == 'EXPENSE' }}>
+                                    <label for="type_expense" class="operation-btn expense">
+                                        <i class="fas fa-arrow-down"></i>
+                                        Расход
+                                    </label>
+                                </div>
+                            </div>
 
-    <!-- Сумма -->
-    <div class="form-group">
-        <label for="amount" class="form-label">Сумма *</label>
-        <input type="number" 
-               id="amount" 
-               name="amount" 
-               class="form-input" 
-               step="0.01" 
-               min="0.01" 
-               placeholder="0.00" 
-               required
-               oninput="formatAmount(this)">
-        <div class="quick-amounts mt-3">
-            <span class="quick-amounts-label">Быстрая сумма:</span>
-            <div class="quick-amounts-buttons">
-                <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(100)">100</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(500)">500</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(1000)">1 000</button>
-                <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(5000)">5 000</button>
-            </div>
-        </div>
-    </div>
+                            <!-- Сумма -->
+                            <div class="form-group">
+                                <label for="amount" class="form-label">Сумма *</label>
+                                <div class="amount-input-container">
+                                    <input type="text" 
+                                           id="amount" 
+                                           name="amount" 
+                                           class="form-input amount-input" 
+                                           placeholder="0.00" 
+                                           required
+                                           value="{{ request.form.get('amount', '') }}"
+                                           inputmode="decimal">
+                                    <span class="currency-symbol">₽</span>
+                                </div>
+                                
+                                <!-- Быстрые суммы -->
+                                <div class="quick-amounts mt-3">
+                                    <span class="quick-amounts-label">Быстрая сумма:</span>
+                                    <div class="quick-amounts-buttons">
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(100)">100</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(500)">500</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(1000)">1 000</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(5000)">5 000</button>
+                                    </div>
+                                </div>
+                            </div>
 
-    <!-- Категория -->
-    <div class="form-group">
-        <label for="category_id" class="form-label">Категория *</label>
-        <select id="category_id" name="category_id" class="form-input" required>
-            <option value="">Выберите категорию</option>
-            {% for category in categories %}
-            <option value="{{ category.id }}" data-type="{{ category.operation_type }}">
-                {{ category.name }} ({{ 'Доход' if category.operation_type == 'INCOME' else 'Расход' }})
-            </option>
-            {% endfor %}
-        </select>
-        {% if not categories %}
-        <div class="form-text">
-            У вас нет категорий. 
-            <a href="{{ url_for('categories.list_categories') }}" class="text-link">Создайте первую категорию</a>
-        </div>
-        {% endif %}
+                            <!-- Категория -->
+                            <div class="form-group">
+                                <div class="form-header-with-action">
+                                    <label for="category_id" class="form-label">Категория *</label>
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="openCategoryModal()">
+                                        <i class="fas fa-plus"></i>
+                                        Новая категория
+                                    </button>
+                                </div>
+                                
+                                <div class="select-wrapper">
+    <select id="category_id" name="category_id" class="form-input" required>
+        <option value="">Выберите категорию</option>
+        {% for category in categories %}
+        <option value="{{ category.id }}" 
+                data-type="{{ category.operation_type }}"
+                {{ 'selected' if request.form.get('category_id')|int == category.id }}>
+            {{ category.name }} ({{ 'Доход' if category.operation_type == 'INCOME' else 'Расход' }})
+        </option>
+        {% endfor %}
+    </select>
+    <div class="select-arrow">
+        <i class="fas fa-chevron-down"></i>
     </div>
+</div>
+                                
+                                {% if not categories %}
+                                <div class="form-text">
+                                    У вас нет категорий. 
+                                    <a href="{{ url_for('categories.list_categories') }}" class="text-link">Создайте первую категорию</a>
+                                </div>
+                                {% endif %}
+                            </div>
 
-    <!-- Описание -->
-    <div class="form-group">
-        <label for="description" class="form-label">Описание</label>
-        <textarea id="description" 
-                  name="description" 
-                  class="form-input" 
-                  rows="3" 
-                  placeholder="Необязательное описание транзакции..."></textarea>
-    </div>
+                            <!-- Описание -->
+                            <div class="form-group">
+                                <label for="description" class="form-label">Описание</label>
+                                <textarea id="description" 
+                                          name="description" 
+                                          class="form-input" 
+                                          rows="3" 
+                                          placeholder="Необязательное описание транзакции...">{{ request.form.get('description', '') }}</textarea>
+                            </div>
 
-    <!-- Дата -->
-    <div class="form-group">
-        <label for="date" class="form-label">Дата</label>
-        <input type="date" 
-               id="date" 
-               name="date" 
-               class="form-input" 
-               value="{{ default_date }}">
-    </div>
+                            <!-- Дата -->
+                            <div class="form-group">
+                                <label for="date" class="form-label">Дата</label>
+                                <input type="date" 
+                                       id="date" 
+                                       name="date" 
+                                       class="form-input" 
+                                       value="{{ request.form.get('date', default_date) }}">
+                            </div>
 
-    <!-- Кнопки -->
-    <div class="form-actions">
-        <button type="submit" class="btn btn-primary btn-with-icon">
-            <i class="fas fa-plus"></i>
-            Добавить транзакцию
-        </button>
-        <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
-            Отмена
-        </a>
-    </div>
-</form>
+                            <!-- Кнопки -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-with-icon">
+                                    <i class="fas fa-plus"></i>
+                                    Добавить транзакцию
+                                </button>
+                                <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline">
+                                    Отмена
+                                </a>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
 
-            <!-- Боковая панель с подсказками -->
+            <!-- Боковая панель -->
             <div class="content-column">
                 <div class="card">
                     <div class="card-body">
@@ -152,6 +184,22 @@
                     </div>
                 </div>
 
+                <!-- Популярные категории -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Популярные категории</h3>
+                        <div class="popular-categories-list">
+                            {% for popular in popular_categories %}
+                            <div class="popular-category {{ 'income' if popular.operation_type == 'INCOME' else 'expense' }}" 
+                                 onclick="fillCategoryModal('{{ popular.name }}', '{{ popular.operation_type }}')">
+                                <i class="fas {{ popular.icon }}"></i>
+                                <span>{{ popular.name }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Последние транзакции -->
                 <div class="card">
                     <div class="card-body">
@@ -165,9 +213,9 @@
                                     <i class="fas {{ 'fa-arrow-up' if transaction.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
                                 </div>
                                 <div class="transaction-details">
-                                    <div class="transaction-category">{{ transaction.category_name }}</div>
+                                    <div class="transaction-category">{{ transaction.category.name }}</div>
                                     <div class="transaction-meta">
-                                        <span class="transaction-date">{{ transaction.date_display }}</span>
+                                        <span class="transaction-date">{{ transaction.date.strftime('%d.%m.%Y') }}</span>
                                         {% if transaction.description %}
                                         <span class="transaction-desc">• {{ transaction.description[:20] }}{% if transaction.description|length > 20 %}...{% endif %}</span>
                                         {% endif %}
@@ -191,26 +239,164 @@
         </div>
     </div>
 </section>
+
+<!-- Модальное окно для создания категории -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Создать новую категорию</h3>
+            <button type="button" class="modal-close" onclick="closeCategoryModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="categoryForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group">
+                    <label for="new_category_name" class="form-label">Название категории *</label>
+                    <input type="text" 
+                           id="new_category_name" 
+                           name="name" 
+                           class="form-input" 
+                           placeholder="Например: Зарплата, Продукты..." 
+                           required
+                           maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Тип категории *</label>
+                    <div class="operation-type-selector">
+                        <input type="radio" 
+                               id="new_type_income" 
+                               name="operation_type" 
+                               value="INCOME" 
+                               required>
+                        <label for="new_type_income" class="operation-btn income">
+                            <i class="fas fa-arrow-up"></i>
+                            Доход
+                        </label>
+                        
+                        <input type="radio" 
+                               id="new_type_expense" 
+                               name="operation_type" 
+                               value="EXPENSE" 
+                               required
+                               checked>
+                        <label for="new_type_expense" class="operation-btn expense">
+                            <i class="fas fa-arrow-down"></i>
+                            Расход
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Создать категорию
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="closeCategoryModal()">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-// Форматирование суммы
+// Форматирование суммы с разделителями тысяч
 function formatAmount(input) {
-    // Убираем лишние нули и форматируем
-    let value = parseFloat(input.value);
-    if (!isNaN(value)) {
-        input.value = value.toFixed(2);
-    }
+    let value = input.value.replace(/[^\d.]/g, '');
+    
+    // Разделяем на целую и дробную части
+    let parts = value.split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts.length > 1 ? '.' + parts[1].substring(0, 2) : '';
+    
+    // Форматируем целую часть с разделителями тысяч
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    
+    input.value = integerPart + decimalPart;
 }
 
 // Установка быстрой суммы
-function setAmount(amount) {
+function setQuickAmount(amount) {
     const amountInput = document.getElementById('amount');
-    amountInput.value = amount.toFixed(2);
+    amountInput.value = amount.toLocaleString('ru-RU');
     amountInput.focus();
 }
+
+// Заполнение модального окна популярными категориями
+function fillCategoryModal(name, type) {
+    document.getElementById('new_category_name').value = name;
+    document.getElementById(`new_type_${type.toLowerCase()}`).checked = true;
+    openCategoryModal();
+}
+
+// Модальное окно для создания категории
+function openCategoryModal() {
+    document.getElementById('categoryModal').style.display = 'flex';
+    document.getElementById('new_category_name').focus();
+}
+
+function closeCategoryModal() {
+    document.getElementById('categoryModal').style.display = 'none';
+    document.getElementById('categoryForm').reset();
+}
+
+// Закрытие модального окна при клике вне его
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('categoryModal');
+    if (event.target === modal) {
+        closeCategoryModal();
+    }
+});
+
+// Обработка создания категории через AJAX
+document.getElementById('categoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch("{{ url_for('transactions.create_category_ajax') }}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Добавляем новую категорию в select
+            const categorySelect = document.getElementById('category_id');
+            const newOption = new Option(
+                data.category.name + ' (' + (data.category.operation_type === 'INCOME' ? 'Доход' : 'Расход') + ')',
+                data.category.id
+            );
+            newOption.setAttribute('data-type', data.category.operation_type);
+            categorySelect.appendChild(newOption);
+            categorySelect.value = data.category.id;
+            
+            // Закрываем модальное окно и очищаем форму
+            closeCategoryModal();
+            
+            // Показываем сообщение об успехе
+            showNotification('Категория успешно создана!', 'success');
+        } else {
+            // Показываем ошибки
+            alert('Ошибка: ' + data.errors.join(', '));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при создании категории');
+    });
+});
 
 // Синхронизация типа операции с выбранной категорией
 document.getElementById('category_id').addEventListener('change', function() {
@@ -237,22 +423,52 @@ document.querySelectorAll('input[name="operation_type"]').forEach(radio => {
                 option.style.display = '';
             } else {
                 option.style.display = 'none';
+                // Если выбранная категория не подходит, сбрасываем выбор
+                if (option.selected && categoryType !== selectedType) {
+                    categorySelect.value = '';
+                }
             }
-        }
-        
-        // Сбрасываем выбор категории если она не подходит
-        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-        if (selectedOption.value && selectedOption.getAttribute('data-type') !== selectedType) {
-            categorySelect.value = '';
         }
     });
 });
 
-// Валидация формы
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('amount');
+    
+    // Форматирование суммы при вводе
+    amountInput.addEventListener('input', function() {
+        formatAmount(this);
+    });
+    
+    // Форматирование при потере фокуса
+    amountInput.addEventListener('blur', function() {
+        let value = this.value.replace(/[^\d.]/g, '');
+        if (value) {
+            value = parseFloat(value).toFixed(2);
+            this.value = parseFloat(value).toLocaleString('ru-RU', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    });
+    
+    // Автоматическая синхронизация категорий при загрузке
+    const selectedType = document.querySelector('input[name="operation_type"]:checked');
+    if (selectedType) {
+        selectedType.dispatchEvent(new Event('change'));
+    }
+});
+
+// Валидация формы транзакции
 document.getElementById('transactionForm').addEventListener('submit', function(e) {
-    const amount = parseFloat(document.getElementById('amount').value);
+    const amountInput = document.getElementById('amount');
     const operationType = document.querySelector('input[name="operation_type"]:checked');
     const categoryId = document.getElementById('category_id').value;
+    
+    // Преобразуем отформатированную сумму в число
+    let amountValue = amountInput.value.replace(/\s/g, '').replace(',', '.');
+    amountValue = parseFloat(amountValue);
     
     let isValid = true;
     
@@ -262,15 +478,39 @@ document.getElementById('transactionForm').addEventListener('submit', function(e
     } else if (!categoryId) {
         alert('Выберите категорию');
         isValid = false;
-    } else if (!amount || amount <= 0) {
+    } else if (!amountValue || amountValue <= 0 || isNaN(amountValue)) {
         alert('Введите корректную сумму');
         isValid = false;
     }
     
     if (!isValid) {
         e.preventDefault();
+    } else {
+        // Устанавливаем неформатированное значение перед отправкой
+        amountInput.value = amountValue.toFixed(2);
     }
 });
+
+// Вспомогательная функция для уведомлений
+function showNotification(message, type) {
+    // Простая реализация уведомления
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} notification`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
 </script>
 
 <style>
@@ -316,28 +556,6 @@ document.getElementById('transactionForm').addEventListener('submit', function(e
     transition: all 0.2s ease;
 }
 
-/* Стили для быстрых сумм */
-.quick-amounts {
-    background: var(--bg-secondary);
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-}
-
-.quick-amounts-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 0.5rem;
-}
-
-.quick-amounts-buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
 /* Стили для подсказок */
 .tips-list {
     display: flex;
@@ -370,14 +588,48 @@ document.getElementById('transactionForm').addEventListener('submit', function(e
     color: var(--text-light);
 }
 
-/* Стили для компактного списка транзакций */
-.transactions-list.compact .transaction-item.compact {
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
+/* Стили для популярных категорий */
+.popular-categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.transactions-list.compact .transaction-item.compact:last-child {
-    margin-bottom: 0;
+.popular-category {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+}
+
+.popular-category:hover {
+    background: var(--bg-hover);
+    transform: translateX(5px);
+    border-color: var(--primary);
+}
+
+.popular-category.income {
+    border-left: 4px solid var(--success);
+}
+
+.popular-category.expense {
+    border-left: 4px solid var(--error);
+}
+
+.popular-category i {
+    width: 1rem;
+    text-align: center;
+    color: var(--text-light);
+}
+
+.popular-category span {
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 /* Стили для кнопок формы */
@@ -389,6 +641,103 @@ document.getElementById('transactionForm').addEventListener('submit', function(e
 
 .form-actions .btn {
     flex: 1;
+}
+
+/* Стили для поля ввода суммы */
+.amount-input-container {
+    position: relative;
+}
+
+.amount-input {
+    padding-left: 2.5rem;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+/* Стили для модального окна */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--background);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Стили для заголовка с действием */
+.form-header-with-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Анимация для уведомлений */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* Адаптивность */
@@ -412,12 +761,23 @@ document.getElementById('transactionForm').addEventListener('submit', function(e
         flex-direction: column;
     }
     
-    .quick-amounts-buttons {
-        justify-content: center;
-    }
-    
     .content-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .form-header-with-action {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .form-header-with-action .btn {
+        align-self: flex-start;
     }
 }
 
@@ -429,6 +789,49 @@ document.getElementById('transactionForm').addEventListener('submit', function(e
     .operation-btn {
         flex: 1;
         justify-content: center;
+    }
+    
+    .popular-category {
+        padding: 1rem;
+    }
+}
+/* Стили для кастомизированного выпадающего списка */
+.select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.select-wrapper select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 2.5rem;
+    width: 100%;
+    cursor: pointer;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-light);
+    transition: transform 0.2s ease;
+}
+
+.select-wrapper select:focus ~ .select-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Для браузеров, которые не поддерживают appearance */
+@supports not (appearance: none) {
+    .select-wrapper select {
+        background-image: none;
+        padding-right: 1rem;
+    }
+    .select-arrow {
+        display: none;
     }
 }
 </style>

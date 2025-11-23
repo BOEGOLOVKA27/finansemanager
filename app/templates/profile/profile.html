@@ -196,40 +196,7 @@
             </div>
 
             <!-- Интеграция с Telegram -->
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title">Интеграция с Telegram</h3>
-                    {% if current_user.telegram_user_id %}
-                    <div class="telegram-status">
-                        <div class="status-indicator success">
-                            <i class="fab fa-telegram"></i>
-                            <span>Telegram привязан</span>
-                        </div>
-                        <p class="text-muted">ID: {{ current_user.telegram_user_id }}</p>
-                        <a href="{{ url_for('profile.unlink_telegram') }}" class="btn btn-outline w-full mt-3">
-                            <i class="fas fa-unlink"></i>
-                            Отвязать Telegram
-                        </a>
-                    </div>
-                    {% else %}
-                    <div class="telegram-status">
-                        <div class="status-indicator">
-                            <i class="fab fa-telegram"></i>
-                            <span>Telegram не привязан</span>
-                        </div>
-                        <div class="alert alert-info mt-3">
-                            <p><strong>Как привязать Telegram:</strong></p>
-                            <ol class="instruction-list">
-                                <li>Найдите нашего бота в Telegram: <strong>@YourFinanceBot</strong></li>
-                                <li>Отправьте команду: <code>/start</code></li>
-                                <li>Затем отправьте: <code>/link {{ current_user.id }}</code></li>
-                                <li>Бот автоматически привяжет ваш аккаунт</li>
-                            </ol>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+            
         </div>
     </div>
 </div>

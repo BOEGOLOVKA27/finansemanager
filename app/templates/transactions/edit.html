@@ -38,6 +38,7 @@
                         {% endwith %}
 
                         <form method="POST" id="transactionForm">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <!-- Сумма -->
                             <div class="form-group">
                                 <label for="amount" class="form-label">Сумма *</label>
@@ -216,6 +217,7 @@
 
 <!-- Форма для удаления -->
 <form id="deleteForm" action="{{ url_for('transactions.delete_transaction', transaction_id=transaction.id) }}" method="POST" style="display: none;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 </form>
 {% endblock %}
 
