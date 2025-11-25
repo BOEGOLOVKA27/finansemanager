@@ -7,6 +7,20 @@ from datetime import datetime
 from flask_login import current_user
 from .models import User
 
+class ForgotPasswordForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Отправить ссылку для сброса')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Новый пароль', validators=[
+        DataRequired(), 
+        Length(min=6, message='Пароль должен содержать минимум 6 символов')
+    ])
+    confirm_password = PasswordField('Подтвердите пароль', validators=[
+        DataRequired(), 
+        EqualTo('password', message='Пароли должны совпадать')
+    ])
+    submit = SubmitField('Сбросить пароль')
 
 # Форма для логина (из вашего кода)
 class LoginForm(FlaskForm):

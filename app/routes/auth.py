@@ -7,7 +7,8 @@ import secrets
 from app.models.user import User
 from app.models.category import Category
 from werkzeug.security import check_password_hash
-from app.forms import LoginForm, RegistrationForm
+from app.forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm
+from datetime import datetime, timedelta
 from app import db, mail
 from flask_mail import Message
 from config import config
@@ -25,16 +26,18 @@ def login():
         user = User.query.filter(
             (User.login == username_or_email) | (User.email == username_or_email)
         ).first()
-        
-        login_user(user, remember=True)
 
-        # if user and check_password_hash(user.password, password):
-        #     login_user(user, remember=True)
-        #     flash('Успешная авторизация!', 'success')
-        #     return redirect(url_for('main.index'))  # ← Изменено на главную страницу финансов
-        # else:
-        #     flash('Неверный логин или пароль!', 'danger')
-        #     return redirect(url_for('auth.login'))
+        print(user)
+        print(user.password)
+        print(password)
+        print(check_password_hash(user.password, password))
+        if user and check_password_hash(user.password, password):
+            login_user(user, remember=True)
+            flash('Успешная авторизация!', 'success')
+            return redirect(url_for('main.index'))  # ← Изменено на главную страницу финансов
+        else:
+            flash('Неверный логин или пароль!', 'danger')
+            return redirect(url_for('auth.login'))
         
         return redirect(url_for('main.index'))  
 
@@ -124,6 +127,8 @@ def confirm_email(token):
 
     new_user = User(email=email, login=username, password=hashed_password, token=user_token)
 
+    
+
     if not new_user.add():
         flash('Ошибка создания пользователя. Попробуйте снова.', 'error')
         return redirect(url_for('auth.signup'))
@@ -134,3 +139,102 @@ def confirm_email(token):
     flash('Вы успешно подтвердили ваш email.', 'success')
 
     return redirect(url_for('main.index'))  
+
+
+
+@bp.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            # Генерируем токен сброса пароля
+            reset_token = secrets.token_urlsafe(32)
+            user.reset_token = reset_token
+            user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+            
+            # Отправляем email
+            if send_password_reset_email(user.email, reset_token):
+                flash('На вашу почту отправлена ссылка для сброса пароля. Ссылка действительна 1 час.', 'info')
+            else:
+                flash('Ошибка при отправке email. Попробуйте позже.', 'danger')
+        else:
+            # Для безопасности показываем одинаковое сообщение
+            flash('Если email зарегистрирован, на него будет отправлена ссылка для сброса пароля.', 'info')
+        
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/forgot_password.html', form=form)
+
+@bp.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    
+    # Проверяем токен
+    user = User.query.filter_by(reset_token=token).first()
+    
+    if not user or not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+        flash('Ссылка для сброса пароля недействительна или устарела.', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+    
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        # Обновляем пароль
+        user.password = generate_password_hash(form.password.data)
+        user.reset_token = None  # Удаляем токен после использования
+        user.reset_token_expires = None
+        db.session.commit()
+        
+        flash('Пароль успешно изменен! Теперь вы можете войти с новым паролем.', 'success')
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/reset_password.html', form=form, token=token)
+
+def send_password_reset_email(email, token):
+    """Отправка email для сброса пароля"""
+    try:
+        msg = Message('Сброс пароля - FinanceTrack', 
+                     sender=current_app.config['MAIL_USERNAME'], 
+                     recipients=[email])
+        
+        reset_link = url_for('auth.reset_password', token=token, _external=True)
+        
+        msg.body = f"""
+        Здравствуйте,
+
+        Вы запросили сброс пароля для вашего аккаунта в Финансовом трекере.
+
+        Для сброса пароля перейдите по ссылке:
+        {reset_link}
+
+        Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
+
+        Ссылка действительна в течение 1 часа.
+
+        С наилучшими пожеланиями,
+        Команда Финансового трекера
+        """
+        
+        msg.html = f"""
+        <h3>Сброс пароля - FinanceTrack</h3>
+        <p>Здравствуйте,</p>
+        <p>Вы запросили сброс пароля для вашего аккаунта.</p>
+        <p><a href="{reset_link}">Нажмите здесь для сброса пароля</a></p>
+        <p>Если вы не запрашивали сброс пароля, проигнорируйте это письмо.</p>
+        <p><em>Ссылка действительна в течение 1 часа.</em></p>
+        <br>
+        <p>С наилучшими пожеланиями,<br>Команда Финансового трекера</p>
+        """
+        
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Ошибка отправки email для сброса пароля: {e}")
+        return False

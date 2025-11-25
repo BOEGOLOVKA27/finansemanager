@@ -7,6 +7,10 @@ from sqlalchemy import func, extract
 from .transaction import Transaction
 from .category import Category
 
+from app import db
+from flask_login import UserMixin
+from datetime import datetime
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     
@@ -19,12 +23,15 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # 🔐 ПОЛЯ ДЛЯ ВОССТАНОВЛЕНИЯ ПАРОЛЯ
+    reset_token = db.Column(db.String(100), unique=True, nullable=True, index=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
+    
     # Связи с финансовыми данными
     categories = db.relationship('Category', back_populates='user', 
                                cascade='all, delete-orphan', lazy='dynamic')
     transactions = db.relationship('Transaction', back_populates='user',
                                  cascade='all, delete-orphan', lazy='dynamic')
-    
     def set_password(self, password):
         self.password = generate_password_hash(password)
     
