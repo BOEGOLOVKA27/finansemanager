@@ -32,4 +32,4 @@ class DevelopmentConfig(Config):
 config = {
     'default': DevelopmentConfig
 }
-#CREATE USER 'admin'@'%' IDENTIFIED BY 'Boegolovka_27';
+

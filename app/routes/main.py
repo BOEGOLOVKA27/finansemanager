@@ -10,7 +10,8 @@ from datetime import datetime
 bp = Blueprint('main', __name__)
 
 @bp.route('/')
-def index():
+@bp.route('/page/<int:page>')
+def index(page=1):
     """Главная страница"""
     if not current_user.is_authenticated:
         return render_template('index.html')
@@ -21,8 +22,13 @@ def index():
     monthly_stats = current_user.get_balance_stats(now.year, now.month)
     total_stats = current_user.get_balance_stats()
     
-    # Получаем последние транзакции
-    monthly_transactions = current_user.get_recent_activity(limit=10)
+    # Получаем транзакции с пагинацией
+    monthly_transactions = current_user.get_recent_activity_paginated(
+        page=page, 
+        per_page=5,
+        year=now.year,
+        month=now.month
+    )
     
     # Получаем категории с транзакциями за текущий месяц для диаграмм
     categories = current_user.categories.all()
@@ -54,27 +60,11 @@ def index():
                         total_stats=total_stats,
                         categories_summary=categories_summary,
                         monthly_transactions=monthly_transactions,
-                        now=now)
+                        now=now,
+                        page=page)
 
 
-@bp.route('/dashboard')
-@login_required
-def dashboard():
-    """Расширенный дашборд"""
-    now = datetime.now()
-    
-    # Используем существующие методы
-    monthly_stats = current_user.get_balance_stats(now.year, now.month)
-    category_stats = current_user.get_category_stats(days=30)
-    recent_activity = current_user.get_recent_activity(limit=20)
-    
-    return render_template('dashboard.html', 
-                         monthly_stats=monthly_stats,
-                         category_stats=category_stats,
-                         recent_activity=recent_activity,
-                         current_year=now.year,
-                         current_month=now.month)
-    
+
 @bp.route('/feedback')
 def feedback():
     """Страница обратной связи"""

@@ -3,6 +3,7 @@
 {% block title %}Транзакции — FinanceTrack{% endblock %}
 
 {% block content %}
+<link href="{{ url_for('static', filename='css/style_transaction.css') }}" rel="stylesheet">
 <section class="main">
     <div class="container">
         <!-- Заголовок и кнопка в новом оформлении -->
@@ -21,84 +22,138 @@
             </div>
         </div>
 
-       <!-- Фильтры и поиск -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="filters-grid">
-            <div class="filter-group">
-                <label class="filter-label">Категория</label>
-                <div class="select-wrapper">
-                    <select class="form-input" onchange="applyFilter('category', this.value)">
-                        <option value="">Все категории</option>
-                        {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}</option>
-                        {% endfor %}
-                    </select>
+        <!-- Фильтры и поиск -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Категория</label>
+                        <div class="select-wrapper">
+                            <select class="form-input" onchange="applyFilter('category', this.value)">
+                                <option value="">Все категории</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Тип операции</label>
+                        <div class="select-wrapper">
+                            <select class="form-input" onchange="applyFilter('type', this.value)">
+                                <option value="">Все типы</option>
+                                <option value="INCOME">Доходы</option>
+                                <option value="EXPENSE">Расходы</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group search-group">
+                        <label class="filter-label">Поиск</label>
+                        <input type="text" 
+                               class="form-input" 
+                               placeholder="По описанию или категории..." 
+                               oninput="applySearch(this.value)">
+                    </div>
                 </div>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Тип операции</label>
-                <div class="select-wrapper">
-                    <select class="form-input" onchange="applyFilter('type', this.value)">
-                        <option value="">Все типы</option>
-                        <option value="INCOME">Доходы</option>
-                        <option value="EXPENSE">Расходы</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="filter-group search-group">
-                <label class="filter-label">Поиск</label>
-                <input type="text" 
-                       class="form-input" 
-                       placeholder="По описанию или категории..." 
-                       oninput="applySearch(this.value)">
             </div>
         </div>
-    </div>
-</div>
 
-
-
-        <!-- Список транзакций -->
+        <!-- Список транзакций с группировкой по датам -->
         <div class="card">
             <div class="card-body">
                 {% if transactions.items %}
-                <div class="transactions-list">
+                <div class="transactions-timeline">
+                    {# Создаем словарь для группировки по датам #}
+                    {% set date_groups = {} %}
                     {% for transaction in transactions.items %}
-                    <div class="transaction-item" data-category="{{ transaction.category_id }}" data-type="{{ transaction.operation_type }}">
-                        <div class="transaction-icon {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
-                            <i class="fas {{ 'fa-arrow-up' if transaction.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
-                        </div>
-                        <div class="transaction-details">
-                            <div class="transaction-category">{{ transaction.category.name }}</div>
-                            <div class="transaction-meta">
-                                <span class="transaction-date">
-                                    {{ transaction.date.strftime('%d.%m.%Y') }}
-                                </span>
-                                {% if transaction.description %}
-                                <span class="transaction-desc">• {{ transaction.description }}</span>
+                        {% set date_key = transaction.date.strftime('%Y-%m-%d') %}
+                        {% if date_key not in date_groups %}
+                            {% set _ = date_groups.update({date_key: []}) %}
+                        {% endif %}
+                        {% set _ = date_groups[date_key].append(transaction) %}
+                    {% endfor %}
+
+                    {# Проходим по сгруппированным датам #}
+                    {% for date_key, transactions_in_day in date_groups.items()|sort(reverse=true) %}
+                    <div class="timeline-day" data-date="{{ date_key }}">
+                        <!-- Заголовок дня -->
+                        <div class="day-header">
+                            <div class="day-date">
+                                <span class="day-name">{{ transactions_in_day[0].date.strftime('%A') }}</span>
+                                <span class="day-number">{{ transactions_in_day[0].date.strftime('%d.%m.%Y') }}</span>
+                            </div>
+                            <div class="day-totals">
+                                {% set day_income = [] %}
+                                {% set day_expense = [] %}
+                                {% for transaction in transactions_in_day %}
+                                    {% if transaction.operation_type == 'INCOME' %}
+                                        {% set _ = day_income.append(transaction.amount) %}
+                                    {% else %}
+                                        {% set _ = day_expense.append(transaction.amount) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if day_income %}
+                                <div class="day-income">
+                                    <span class="total-label">Доходы:</span>
+                                    <span class="total-amount income">+{{ "₽{:,.2f}".format(day_income | sum) }}</span>
+                                </div>
                                 {% endif %}
+                                {% if day_expense %}
+                                <div class="day-expense">
+                                    <span class="total-label">Расходы:</span>
+                                    <span class="total-amount expense">-{{ "₽{:,.2f}".format(day_expense | sum) }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="day-balance">
+                                    <span class="total-label">Итог:</span>
+                                    <span class="total-amount {{ 'income' if (day_income|sum - day_expense|sum) > 0 else 'expense' if (day_income|sum - day_expense|sum) < 0 else '' }}">
+                                        {{ "₽{:,.2f}".format(day_income|sum - day_expense|sum) }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div class="transaction-amount {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
-                            {{ '+' if transaction.operation_type == 'INCOME' else '-' }}{{ "₽{:,.2f}".format(transaction.amount) }}
-                        </div>
-                        <div class="transaction-actions">
-                            <a href="{{ url_for('transactions.edit_transaction', transaction_id=transaction.id) }}" 
-                               class="btn btn-outline btn-sm">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ url_for('transactions.delete_transaction', transaction_id=transaction.id) }}" 
-                                  method="POST" 
-                                  class="inline-form"
-                                  onsubmit="return confirm('Удалить эту транзакцию?')">
-                                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-outline btn-sm text-error">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                        
+                        <!-- Список транзакций за день -->
+                        <div class="day-transactions">
+                            {% for transaction in transactions_in_day|sort(attribute='date', reverse=true) %}
+                            <div class="transaction-card" data-category="{{ transaction.category_id }}" data-type="{{ transaction.operation_type }}">
+                                <div class="transaction-main">
+                                    <div class="transaction-icon {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
+                                        <i class="fas {{ 'fa-arrow-up' if transaction.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
+                                    </div>
+                                    <div class="transaction-info">
+                                        <div class="transaction-category">{{ transaction.category.name }}</div>
+                                        {% if transaction.description %}
+                                        <div class="transaction-description">{{ transaction.description }}</div>
+                                        {% endif %}
+                                        <div class="transaction-time">
+                                            <i class="fas fa-clock"></i>
+                                            {{ transaction.created_at.strftime('%H:%M') }} 
+                                        </div>
+                                    </div>
+                                    <div class="transaction-amount {{ 'income' if transaction.operation_type == 'INCOME' else 'expense' }}">
+                                        {{ '+' if transaction.operation_type == 'INCOME' else '-' }}{{ "₽{:,.2f}".format(transaction.amount) }}
+                                    </div>
+                                </div>
+                                <div class="transaction-actions">
+                                    <a href="{{ url_for('transactions.edit_transaction', transaction_id=transaction.id) }}" 
+                                       class="btn-action btn-edit" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ url_for('transactions.delete_transaction', transaction_id=transaction.id) }}" 
+                                          method="POST" 
+                                          class="action-form"
+                                          onsubmit="return confirm('Удалить эту транзакцию?')">
+                                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn-action btn-delete" title="Удалить">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                     {% endfor %}
@@ -144,270 +199,91 @@
         </div>
     </div>
 </section>
+
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-// Простая фильтрация на клиенте
+// Фильтрация транзакций
 function applyFilter(type, value) {
-    const items = document.querySelectorAll('.transaction-item');
+    const days = document.querySelectorAll('.timeline-day');
+    const transactions = document.querySelectorAll('.transaction-card');
     
-    items.forEach(item => {
+    // Сначала показываем все
+    transactions.forEach(item => item.style.display = 'flex');
+    days.forEach(day => day.style.display = 'block');
+    
+    if (!value) return;
+    
+    // Применяем фильтр к транзакциям
+    transactions.forEach(item => {
         let show = true;
         
         if (type === 'category' && value) {
-            show = show && item.getAttribute('data-category') === value;
+            show = item.getAttribute('data-category') === value;
         }
         
         if (type === 'type' && value) {
-            show = show && item.getAttribute('data-type') === value;
+            show = item.getAttribute('data-type') === value;
         }
         
         item.style.display = show ? 'flex' : 'none';
+    });
+    
+    // Скрываем дни, в которых не осталось видимых транзакций
+    days.forEach(day => {
+        const visibleTransactions = day.querySelectorAll('.transaction-card[style="display: flex;"]');
+        day.style.display = visibleTransactions.length > 0 ? 'block' : 'none';
     });
 }
 
 // Поиск по описанию
 function applySearch(query) {
-    const items = document.querySelectorAll('.transaction-item');
-    const searchTerm = query.toLowerCase();
+    const days = document.querySelectorAll('.timeline-day');
+    const transactions = document.querySelectorAll('.transaction-card');
+    const searchTerm = query.toLowerCase().trim();
     
-    items.forEach(item => {
-        const description = item.querySelector('.transaction-desc')?.textContent.toLowerCase() || '';
+    if (!searchTerm) {
+        // Показываем все, если поиск пустой
+        transactions.forEach(item => item.style.display = 'flex');
+        days.forEach(day => day.style.display = 'block');
+        return;
+    }
+    
+    transactions.forEach(item => {
+        const description = item.querySelector('.transaction-description')?.textContent.toLowerCase() || '';
         const category = item.querySelector('.transaction-category')?.textContent.toLowerCase() || '';
         
         const match = description.includes(searchTerm) || category.includes(searchTerm);
         item.style.display = match ? 'flex' : 'none';
     });
+    
+    // Скрываем дни, в которых не осталось видимых транзакций
+    days.forEach(day => {
+        const visibleTransactions = day.querySelectorAll('.transaction-card[style="display: flex;"]');
+        day.style.display = visibleTransactions.length > 0 ? 'block' : 'none';
+    });
 }
 
-// Сброс фильтров при загрузке
+// Перевод названий дней на русский
 document.addEventListener('DOMContentLoaded', function() {
-    // Можно добавить сохранение состояния фильтров в localStorage
+    const dayNames = {
+        'Monday': 'Понедельник',
+        'Tuesday': 'Вторник',
+        'Wednesday': 'Среда',
+        'Thursday': 'Четверг',
+        'Friday': 'Пятница',
+        'Saturday': 'Суббота',
+        'Sunday': 'Воскресенье'
+    };
+    
+    document.querySelectorAll('.day-name').forEach(element => {
+        const englishDay = element.textContent;
+        if (dayNames[englishDay]) {
+            element.textContent = dayNames[englishDay];
+        }
+    });
 });
 </script>
-
-<style>
-.page-header {
-    margin-bottom: 2rem;
-}
-
-.page-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 2rem;
-}
-
-.page-header-text {
-    flex: 1;
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    color: var(--text-primary);
-}
-
-.page-description {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-.page-header-actions {
-    flex-shrink: 0;
-}
-
-.btn-with-icon {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-
-.btn-lg {
-    font-size: 1.1rem;
-}
-
-/* Стили для фильтров */
-.filters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    align-items: end;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.filter-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.search-group {
-    grid-column: span 1;
-}
-
-@media (min-width: 768px) {
-    .filters-grid {
-        grid-template-columns: 1fr 1fr 2fr;
-    }
-}
-
-/* Стили для пагинации */
-.pagination {
-    border-top: 1px solid var(--border);
-    padding-top: 1.5rem;
-}
-
-.pagination-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-}
-
-.pagination-info {
-    color: var(--text-light);
-    font-size: 0.9rem;
-}
-
-.pagination-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 80px;
-    justify-content: center;
-}
-
-.transaction-actions {
-    display: flex;
-    gap: 0.25rem;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.transaction-item:hover .transaction-actions {
-    opacity: 1;
-}
-
-.inline-form {
-    display: inline;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .page-header-content {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-    }
-    
-    .page-header-actions {
-        align-self: stretch;
-    }
-    
-    .btn-with-icon {
-        justify-content: center;
-        width: 100%;
-    }
-    
-    .filters-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .pagination-content {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-}
-</style>
-
-<style>
-.filters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    align-items: end;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.filter-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.search-group {
-    grid-column: span 1;
-}
-
-/* Исправление для выпадающих списков */
-.select-wrapper {
-    position: relative;
-    display: flex;
-}
-
-.select-wrapper::after {
-    content: "▼";
-    font-size: 0.7rem;
-    color: var(--text-light);
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-}
-
-.select-wrapper select {
-    width: 100%;
-    padding-right: 2.5rem; /* Добавляем место для стрелки */
-    appearance: none; /* Убираем стандартную стрелку */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-}
-
-/* Для браузеров на WebKit (Chrome, Safari) */
-.select-wrapper select::-ms-expand {
-    display: none; /* Скрываем стрелку в IE */
-}
-
-/* Убедимся, что поле поиска тоже имеет правильные отступы */
-.search-group .form-input {
-    padding-right: 1rem;
-}
-
-@media (min-width: 768px) {
-    .filters-grid {
-        grid-template-columns: 1fr 1fr 2fr;
-    }
-}
-
-@media (max-width: 767px) {
-    .filters-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .select-wrapper::after {
-        right: 1.5rem;
-    }
-}
-</style>
 {% endblock %}

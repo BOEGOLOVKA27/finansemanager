@@ -246,3 +246,18 @@ class User(UserMixin, db.Model):
         return Transaction.query.filter_by(user_id=self.id)\
             .order_by(Transaction.date.desc(), Transaction.created_at.desc())\
             .limit(limit).all()
+            
+    def get_recent_activity_paginated(self, page=1, per_page=5, year=None, month=None):
+
+        # Используем существующий relationship transactions
+        query = self.transactions
+        
+        if year and month:
+            query = query.filter(
+                extract('year', Transaction.date) == year,
+                extract('month', Transaction.date) == month
+            )
+        
+        return query.order_by(Transaction.date.desc(), Transaction.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )

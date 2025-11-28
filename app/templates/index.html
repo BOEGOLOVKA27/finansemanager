@@ -32,7 +32,7 @@
                             <i class="fas fa-arrow-up"></i>
                         </div>
                         <div class="stat-info">
-                            <div class="stat-value">{{ "₽{:,.2f}".format(monthly_stats.income) }}</div>
+                            <div class="stat-value">{{ "₽{:,.2f}".format(monthly_stats.income).replace(',', ' ') }}</div>
                             <div class="stat-label">Доходы</div>
                         </div>
                     </div>
@@ -41,7 +41,7 @@
                             <i class="fas fa-arrow-down"></i>
                         </div>
                         <div class="stat-info">
-                            <div class="stat-value">{{ "₽{:,.2f}".format(monthly_stats.expenses) }}</div>
+                            <div class="stat-value">{{ "₽{:,.2f}".format(monthly_stats.expenses).replace(',', ' ') }}</div>
                             <div class="stat-label">Расходы</div>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                         </div>
                         <div class="stat-info">
                             <div class="stat-value {{ 'positive' if monthly_stats.balance >= 0 else 'negative' }}">
-                                {{ "₽{:,.2f}".format(monthly_stats.balance) }}
+                                {{ "₽{:,.2f}".format(monthly_stats.balance).replace(',', ' ') }}
                             </div>
                             <div class="stat-label">Баланс</div>
                         </div>
@@ -66,15 +66,14 @@
                         <div class="card-header">
                             <h3 class="card-title">Распределение по категориям</h3>
                             <div class="chart-total-badge">
-                                Баланс: {{ "₽{:,.0f}".format(monthly_stats.balance) }}
+                                Баланс: {{ "₽{:,.0f}".format(monthly_stats.balance).replace(',', ' ') }}
                             </div>
                         </div>
                         <div class="compact-chart-container">
                             <canvas id="combinedChart"></canvas>
                             <div class="chart-center-text">
-                                <div class="center-income">📈 {{ "₽{:,.0f}".format(monthly_stats.income) }}</div>
-                                <div class="center-expense">📉 {{ "₽{:,.0f}".format(monthly_stats.expenses) }}</div>
-                               
+                                <div class="center-income">📈 {{ "₽{:,.0f}".format(monthly_stats.income).replace(',', ' ') }}</div>
+                                <div class="center-expense">📉 {{ "₽{:,.0f}".format(monthly_stats.expenses).replace(',', ' ') }}</div>
                             </div>
                         </div>
                         <div class="chart-legend-compact">
@@ -86,7 +85,7 @@
                                     <i class="fas {% if category.operation_type == 'INCOME' %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
                                 </div>
                                 <span class="legend-label">{{ category.name }}</span>
-                                <span class="legend-amount">{{ "₽{:,.0f}".format(category_data.total_amount) }}</span>
+                                <span class="legend-amount">{{ "₽{:,.0f}".format(category_data.total_amount).replace(',', ' ') }}</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -107,60 +106,107 @@
                 </div>
                 {% endif %}
 
-                <!-- Monthly Transactions -->
                 <div class="card">
-                    <div class="card-body">
-                        <div class="card-header">
-                            <h3 class="card-title">Транзакции за месяц</h3>
-                            <div class="card-actions">
-                                <a href="{{ url_for('transactions.list_transactions') }}" class="btn-link">
-                                    Все транзакции
-                                </a>
-                                <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i>
-                                    Добавить
-                                </a>
-                            </div>
-                        </div>
-                        
-                        {% if monthly_transactions %}
-                        <div class="transactions-list">
-                            {% for transaction in monthly_transactions %}
-                            <div class="transaction-item">
-                                <div class="transaction-icon 
-                                    {% if transaction.operation_type == 'INCOME' %}income{% else %}expense{% endif %}">
-                                    <i class="fas {% if transaction.operation_type == 'INCOME' %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
-                                </div>
-                                <div class="transaction-details">
-                                    <div class="transaction-category">{{ transaction.category_name or 'Без категории' }}</div>
-                                    <div class="transaction-meta">
-                                        <span class="transaction-date">
-                                            {{ transaction.date_display or transaction.date.strftime('%d.%m.%Y') }}
-                                        </span>
-                                        {% if transaction.description %}
-                                        <span class="transaction-desc">• {{ transaction.description }}</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="transaction-amount 
-                                    {% if transaction.operation_type == 'INCOME' %}income{% else %}expense{% endif %}">
-                                    {% if transaction.operation_type == 'INCOME' %}+{% else %}-{% endif %}
-                                    {{ "₽{:,.2f}".format(transaction.amount) }}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-receipt"></i>
-                            <p>Нет транзакций за этот месяц</p>
-                            <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
-                                Добавить первую транзакцию
-                            </a>
-                        </div>
+    <div class="card-body">
+        <div class="card-header">
+            <h3 class="card-title">Транзакции за месяц</h3>
+            <div class="card-actions">
+                <a href="{{ url_for('transactions.list_transactions') }}" class="btn-link">
+                    Все транзакции
+                </a>
+                <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i>
+                    Добавить
+                </a>
+            </div>
+        </div>
+        
+        {% if monthly_transactions.items %}
+        <div class="transactions-list">
+            {% for transaction in monthly_transactions.items %}
+            <div class="transaction-item">
+                <div class="transaction-icon 
+                    {% if transaction.operation_type == 'INCOME' %}income{% else %}expense{% endif %}">
+                    <i class="fas {% if transaction.operation_type == 'INCOME' %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                </div>
+                <div class="transaction-details">
+                    <div class="transaction-category">{{ transaction.category.name if transaction.category else 'Без категории' }}</div>
+                    <div class="transaction-meta">
+                        <span class="transaction-date">
+                            {{ transaction.date.strftime('%d.%m.%Y') }}
+                        </span>
+                        {% if transaction.description %}
+                        <span class="transaction-desc">• {{ transaction.description }}</span>
                         {% endif %}
                     </div>
                 </div>
+                <div class="transaction-item-actions">
+                    <a href="{{ url_for('transactions.edit_transaction', transaction_id=transaction.id) }}" 
+                       class="transaction-action-btn transaction-action-edit" 
+                       title="Редактировать">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <form action="{{ url_for('transactions.delete_transaction', transaction_id=transaction.id) }}" 
+                          method="POST" 
+                          class="transaction-action-form"
+                          onsubmit="return confirm('Вы уверены, что хотите удалить эту транзакцию?');">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="transaction-action-btn transaction-action-delete" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+                <div class="transaction-amount 
+                    {% if transaction.operation_type == 'INCOME' %}income{% else %}expense{% endif %}">
+                    {% if transaction.operation_type == 'INCOME' %}+{% else %}-{% endif %}
+                    {{ "₽{:,.2f}".format(transaction.amount).replace(',', ' ') }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if monthly_transactions.pages > 1 %}
+        <div class="transactions-pagination">
+            <div class="transactions-pagination-content">
+                <div class="transactions-pagination-info">
+                    Показано {{ monthly_transactions.items|length }} из {{ monthly_transactions.total }} транзакций
+                </div>
+                <div class="transactions-pagination-buttons">
+                    {% if monthly_transactions.has_prev %}
+                    <a href="{{ url_for('main.index', page=monthly_transactions.prev_num) }}" class="btn btn-outline transactions-pagination-btn">
+                        <i class="fas fa-chevron-left"></i>
+                        
+                    </a>
+                    {% endif %}
+                    
+                    <span class="transactions-pagination-current">
+                        Страница {{ page }} из {{ monthly_transactions.pages }}
+                    </span>
+                    
+                    {% if monthly_transactions.has_next %}
+                    <a href="{{ url_for('main.index', page=monthly_transactions.next_num) }}" class="btn btn-outline transactions-pagination-btn">
+                        
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-receipt"></i>
+            <p>Нет транзакций за этот месяц</p>
+            <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
+                Добавить первую транзакцию
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
             </div>
 
             <!-- Right Column: All Time Stats -->
@@ -179,22 +225,23 @@
                         <div class="stats-list">
                             <div class="stat-item">
                                 <div class="stat-label">Общие доходы</div>
-                                <div class="stat-value text-success">{{ "₽{:,.2f}".format(total_stats.income) }}</div>
+                                <div class="stat-value text-success">{{ "₽{:,.2f}".format(total_stats.income).replace(',', ' ') }}</div>
                             </div>
                             <div class="stat-item">
                                 <div class="stat-label">Общие расходы</div>
-                                <div class="stat-value text-error">{{ "₽{:,.2f}".format(total_stats.expenses) }}</div>
+                                <div class="stat-value text-error">{{ "₽{:,.2f}".format(total_stats.expenses).replace(',', ' ') }}</div>
                             </div>
                             <div class="stat-item total">
                                 <div class="stat-label">Общий баланс</div>
                                 <div class="stat-value {{ 'text-success' if total_stats.balance >= 0 else 'text-error' }}">
-                                    {{ "₽{:,.2f}".format(total_stats.balance) }}
+                                    {{ "₽{:,.2f}".format(total_stats.balance).replace(',', ' ') }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-<!-- Quick Actions -->
+
+                <!-- Quick Actions -->
                 <div class="card">
                     <div class="card-body">
                         <h3 class="card-title">Быстрые действия</h3>
@@ -218,6 +265,7 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- Categories Summary -->
                 {% if categories_summary %}
                 <div class="card">
@@ -245,7 +293,7 @@
                                 </div>
                                 <div class="category-amount">
                                     <div class="amount {{ 'income' if category.operation_type == 'INCOME' else 'expense' }}">
-                                        {{ "₽{:,.2f}".format(category_data.total_amount) }}
+                                        {{ "₽{:,.2f}".format(category_data.total_amount).replace(',', ' ') }}
                                     </div>
                                 </div>
                             </div>
@@ -266,8 +314,6 @@
                     </div>
                 </div>
                 {% endif %}
-
-               
             </div>
         </div>
     </div>
@@ -382,7 +428,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const value = context.parsed;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = Math.round((value / total) * 100);
-                                return `${label}: ₽${value.toLocaleString()} (${percentage}%)`;
+                                // Форматируем сумму с пробелами вместо запятых
+                                const formattedValue = value.toLocaleString('ru-RU').replace(',', ' ');
+                                return `${label}: ₽${formattedValue} (${percentage}%)`;
                             }
                         }
                     }

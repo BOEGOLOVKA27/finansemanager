@@ -3,6 +3,7 @@
 {% block title %}Редактировать транзакцию — FinanceTrack{% endblock %}
 
 {% block content %}
+<link href="{{ url_for('static', filename='css/style_transaction.css') }}" rel="stylesheet">
 <section class="main">
     <div class="container">
         <!-- Заголовок и кнопка -->
@@ -39,50 +40,57 @@
 
                         <form method="POST" id="transactionForm">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <!-- Сумма -->
+                             <!-- Сумма -->
                             <div class="form-group">
                                 <label for="amount" class="form-label">Сумма *</label>
-                                <input type="number" 
-                                       id="amount" 
-                                       name="amount" 
-                                       class="form-input" 
-                                       step="0.01" 
-                                       min="0.01" 
-                                       placeholder="0.00" 
-                                       value="{{ "%.2f"|format(transaction.amount) }}"
-                                       required
-                                       oninput="formatAmount(this)">
+                                <div class="amount-input-container">
+                                    <input type="text" 
+                                           id="amount" 
+                                           name="amount" 
+                                           class="form-input amount-input" 
+                                           placeholder="0.00" 
+                                           required
+                                           value="{{ request.form.get('amount', transaction.amount) }}"
+                                           inputmode="decimal">
+                                    <span class="currency-symbol">₽</span>
+                                </div>
+                                
+                                <!-- Быстрые суммы -->
                                 <div class="quick-amounts mt-3">
                                     <span class="quick-amounts-label">Быстрая сумма:</span>
                                     <div class="quick-amounts-buttons">
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(100)">100</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(500)">500</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(1000)">1 000</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setAmount(5000)">5 000</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(100)">100</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(500)">500</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(1000)">1 000</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(5000)">5 000</button>
                                     </div>
                                 </div>
                             </div>
-
                             <!-- Категория -->
-                            <div class="form-group">
-                                <label for="category_id" class="form-label">Категория *</label>
-                                <select id="category_id" name="category_id" class="form-input" required>
-                                    <option value="">Выберите категорию</option>
-                                    {% for category in categories %}
-                                    <option value="{{ category.id }}" 
-                                            data-type="{{ category.operation_type }}"
-                                            {{ 'selected' if category.id == transaction.category_id }}>
-                                        {{ category.name }} ({{ 'Доход' if category.operation_type == 'INCOME' else 'Расход' }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                {% if not categories %}
-                                <div class="form-text">
-                                    У вас нет категорий. 
-                                    <a href="{{ url_for('categories.list_categories') }}" class="text-link">Создайте первую категорию</a>
-                                </div>
-                                {% endif %}
-                            </div>
+<div class="form-group">
+    <label for="category_id" class="form-label">Категория *</label>
+    <div class="select-wrapper">
+        <select id="category_id" name="category_id" class="form-input" required>
+            <option value="">Выберите категорию</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}" 
+                    data-type="{{ category.operation_type }}"
+                    {{ 'selected' if category.id == transaction.category_id }}>
+                {{ category.name }} ({{ 'Доход' if category.operation_type == 'INCOME' else 'Расход' }})
+            </option>
+            {% endfor %}
+        </select>
+        <div class="select-arrow">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+    {% if not categories %}
+    <div class="form-text">
+        У вас нет категорий. 
+        <a href="{{ url_for('categories.list_categories') }}" class="text-link">Создайте первую категорию</a>
+    </div>
+    {% endif %}
+</div>
 
                             <!-- Описание -->
                             <div class="form-group">
@@ -125,23 +133,23 @@
                             </div>
 
                             <!-- Кнопки -->
-                            <div class="form-actions mt-4">
-                                <button type="submit" class="btn btn-primary btn-with-icon w-full">
-                                    <i class="fas fa-save"></i>
-                                    Сохранить изменения
-                                </button>
-                                <div class="flex gap-3 mt-3">
-                                    <a href="{{ url_for('transactions.list_transactions') }}" class="btn btn-outline flex-1">
-                                        Отмена
-                                    </a>
-                                    <button type="button" 
-                                            class="btn btn-outline text-error flex-1" 
-                                            onclick="confirmDelete()">
-                                        <i class="fas fa-trash"></i>
-                                        Удалить
-                                    </button>
-                                </div>
-                            </div>
+<div class="form-actions mt-4">
+    <div class="form-actions-equal">
+        <button type="submit" class="btn btn-primary btn-with-icon">
+            <i class="fas fa-save"></i>
+            Сохранить изменения
+        </button>
+         <a href="{{ url_for('main.index') }}" class="btn btn-outline">
+            Отмена
+        </a>
+        <button type="button" 
+                class="btn btn-outline text-error" 
+                onclick="confirmDelete()">
+            <i class="fas fa-trash"></i>
+            Удалить
+        </button>
+    </div>
+</div>
                         </form>
                     </div>
                 </div>
@@ -177,39 +185,46 @@
 
                 <!-- Последние транзакции -->
                 <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title">Последние транзакции</h3>
-                        {% set recent_transactions = current_user.get_recent_activity(5) %}
-                        {% if recent_transactions %}
-                        <div class="transactions-list compact">
-                            {% for trans in recent_transactions %}
-                            <div class="transaction-item compact {{ 'current' if trans.id == transaction.id }}">
-                                <div class="transaction-icon {{ 'income' if trans.operation_type == 'INCOME' else 'expense' }}">
-                                    <i class="fas {{ 'fa-arrow-up' if trans.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
-                                </div>
-                                <div class="transaction-details">
-                                    <div class="transaction-category">{{ trans.category_name }}</div>
-                                    <div class="transaction-meta">
-                                        <span class="transaction-date">{{ trans.date_display }}</span>
-                                        {% if trans.description %}
-                                        <span class="transaction-desc">• {{ trans.description[:20] }}{% if trans.description|length > 20 %}...{% endif %}</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="transaction-amount {{ 'income' if trans.operation_type == 'INCOME' else 'expense' }}">
-                                    {{ '+' if trans.operation_type == 'INCOME' else '-' }}{{ "₽{:,.0f}".format(trans.amount) }}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-receipt"></i>
-                            <p>Нет транзакций</p>
-                        </div>
+    <div class="card-body">
+        <h3 class="card-title">Последние транзакции</h3>
+        {% set recent_transactions = current_user.get_recent_activity(5) %}
+        {% if recent_transactions %}
+        <div class="transactions-list compact">
+            {% for trans in recent_transactions %}
+            <div class="transaction-item compact {{ 'current' if trans.id == transaction.id }}">
+                <div class="transaction-icon {{ 'income' if trans.operation_type == 'INCOME' else 'expense' }}">
+                    <i class="fas {{ 'fa-arrow-up' if trans.operation_type == 'INCOME' else 'fa-arrow-down' }}"></i>
+                </div>
+                <div class="transaction-details">
+                    <div class="transaction-category">
+                        {{ trans.category.name if trans.category else 'Без категории' }}
+                    </div>
+                    <div class="transaction-meta">
+                        <span class="transaction-date">
+                            {{ trans.date.strftime('%d.%m.%Y') }}
+                        </span>
+                        {% if trans.description %}
+                        <span class="transaction-desc">• {{ trans.description[:20] }}{% if trans.description|length > 20 %}...{% endif %}</span>
                         {% endif %}
                     </div>
                 </div>
+                <div class="transaction-amount {{ 'income' if trans.operation_type == 'INCOME' else 'expense' }}">
+                    {{ '+' if trans.operation_type == 'INCOME' else '-' }}{{ "₽{:,.0f}".format(trans.amount).replace(',', ' ') }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-receipt"></i>
+            <p>Нет транзакций</p>
+            <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-sm">
+                Добавить транзакцию
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -224,18 +239,79 @@
 {% block scripts %}
 {{ super() }}
 <script>
-// Форматирование суммы
-function formatAmount(input) {
-    let value = parseFloat(input.value);
-    if (!isNaN(value)) {
-        input.value = value.toFixed(2);
+// Функции для работы с суммами
+function formatNumber(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+function parseFormattedNumber(formattedNumber) {
+    return parseFloat(formattedNumber.replace(/\s/g, '').replace(',', '.'));
+}
+
+// Автоматическое форматирование суммы при вводе
+function formatAmountOnInput(input) {
+    // Сохраняем позицию курсора
+    let cursorPosition = input.selectionStart;
+    let originalValue = input.value;
+    
+    // Убираем все символы кроме цифр и точки/запятой
+    let cleanValue = originalValue.replace(/[^\d,.]/g, '');
+    
+    // Заменяем запятые на точки для единообразия
+    cleanValue = cleanValue.replace(/,/g, '.');
+    
+    // Убираем все точки кроме первой
+    let firstDotIndex = cleanValue.indexOf('.');
+    if (firstDotIndex !== -1) {
+        let integerPart = cleanValue.substring(0, firstDotIndex);
+        let decimalPart = cleanValue.substring(firstDotIndex + 1).replace(/\./g, '');
+        cleanValue = integerPart + '.' + decimalPart;
     }
+    
+    // Разделяем на целую и дробную части
+    let parts = cleanValue.split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts[1] || '';
+    
+    // Ограничиваем дробную часть до 2 знаков
+    if (decimalPart.length > 2) {
+        decimalPart = decimalPart.substring(0, 2);
+    }
+    
+    // Форматируем целую часть с пробелами
+    if (integerPart) {
+        integerPart = formatNumber(integerPart.replace(/\s/g, ''));
+    }
+    
+    // Собираем обратно
+    let formattedValue = integerPart;
+    if (decimalPart) {
+        formattedValue += '.' + decimalPart;
+    }
+    
+    // Устанавливаем отформатированное значение
+    input.value = formattedValue;
+    
+    // Восстанавливаем позицию курсора с учетом добавленных пробелов
+    let newCursorPosition = cursorPosition;
+    if (formattedValue.length > originalValue.length) {
+        // Если добавились пробелы, корректируем позицию
+        let addedSpaces = (formattedValue.match(/ /g) || []).length - (originalValue.match(/ /g) || []).length;
+        newCursorPosition = cursorPosition + addedSpaces;
+    }
+    
+    // Убедимся, что курсор не выходит за границы
+    if (newCursorPosition > formattedValue.length) {
+        newCursorPosition = formattedValue.length;
+    }
+    
+    input.setSelectionRange(newCursorPosition, newCursorPosition);
 }
 
 // Установка быстрой суммы
-function setAmount(amount) {
+function setQuickAmount(amount) {
     const amountInput = document.getElementById('amount');
-    amountInput.value = amount.toFixed(2);
+    amountInput.value = formatNumber(amount.toString()) + '.00';
     amountInput.focus();
 }
 
@@ -243,9 +319,6 @@ function setAmount(amount) {
 document.getElementById('category_id').addEventListener('change', function() {
     const selectedOption = this.options[this.selectedIndex];
     const operationType = selectedOption.getAttribute('data-type');
-    
-    // Можно добавить логику для изменения внешнего вида формы
-    // в зависимости от типа категории
 });
 
 // Подтверждение удаления
@@ -257,12 +330,15 @@ function confirmDelete() {
 
 // Валидация формы
 document.getElementById('transactionForm').addEventListener('submit', function(e) {
-    const amount = parseFloat(document.getElementById('amount').value);
+    const amountInput = document.getElementById('amount');
     const categoryId = document.getElementById('category_id').value;
+    
+    // Парсим сумму перед отправкой
+    const amount = parseFormattedNumber(amountInput.value);
     
     let isValid = true;
     
-    if (!amount || amount <= 0) {
+    if (!amount || amount <= 0 || isNaN(amount)) {
         alert('Введите корректную сумму');
         isValid = false;
     } else if (!categoryId) {
@@ -275,11 +351,64 @@ document.getElementById('transactionForm').addEventListener('submit', function(e
     }
 });
 
-// Автоматическое отображение ошибок при загрузке
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     const amountInput = document.getElementById('amount');
-    const categorySelect = document.getElementById('category_id');
     
+    // Форматируем начальное значение
+    if (amountInput.value) {
+        let initialValue = parseFloat(amountInput.value);
+        if (!isNaN(initialValue)) {
+            amountInput.value = formatNumber(Math.floor(initialValue).toString()) + '.' + 
+                               (initialValue.toFixed(2).split('.')[1] || '00');
+        }
+    }
+    
+    // Обработчики событий для реального ввода
+    amountInput.addEventListener('input', function(e) {
+        formatAmountOnInput(e.target);
+    });
+    
+    amountInput.addEventListener('blur', function() {
+        // Добавляем .00 если нет дробной части
+        let value = this.value;
+        if (value && !value.includes('.')) {
+            this.value = value + '.00';
+        } else if (value && value.endsWith('.')) {
+            this.value = value + '00';
+        } else if (value && value.split('.')[1]?.length === 1) {
+            this.value = value + '0';
+        }
+    });
+    
+    amountInput.addEventListener('focus', function() {
+        // При фокусе убираем .00 для удобства редактирования
+        let value = this.value;
+        if (value && value.endsWith('.00')) {
+            this.value = value.slice(0, -3);
+        }
+    });
+
+    // Ограничение ввода - только цифры, запятая и точка
+    amountInput.addEventListener('keydown', function(e) {
+        // Разрешаем: backspace, delete, tab, escape, enter, .
+        if ([46, 8, 9, 27, 13, 110, 190, 188].indexOf(e.keyCode) !== -1 ||
+            // Разрешаем: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            (e.keyCode === 65 && e.ctrlKey === true) || 
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            (e.keyCode === 88 && e.ctrlKey === true) ||
+            // Разрешаем: домашняя, конец, влево, вправо
+            (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
+        }
+        
+        // Запрещаем все, кроме цифр
+        if ((e.keyCode < 48 || e.keyCode > 57) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+
     // Если есть ошибки, подсвечиваем поля
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -288,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (message.includes('Сумма')) {
                         amountInput.classList.add('invalid');
                     } else if (message.includes('категори')) {
-                        categorySelect.classList.add('invalid');
+                        document.getElementById('category_id').classList.add('invalid');
                     }
                 {% endif %}
             {% endfor %}
@@ -297,168 +426,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-.page-header {
-    margin-bottom: 2rem;
-}
 
-.page-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 2rem;
-}
-
-.page-header-text {
-    flex: 1;
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    color: var(--text-primary);
-}
-
-.page-description {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-.page-header-actions {
-    flex-shrink: 0;
-}
-
-.btn-with-icon {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-
-/* Стили для быстрых сумм */
-.quick-amounts {
-    background: var(--bg-secondary);
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-}
-
-.quick-amounts-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 0.5rem;
-}
-
-.quick-amounts-buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-/* Стили для подсказок */
-.tips-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.tip-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-}
-
-.tip-content {
-    flex: 1;
-}
-
-.tip-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-}
-
-.tip-description {
-    font-size: 0.8rem;
-    color: var(--text-light);
-}
-
-/* Стили для компактного списка транзакций */
-.transactions-list.compact .transaction-item.compact {
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.transactions-list.compact .transaction-item.compact:last-child {
-    margin-bottom: 0;
-}
-
-.transaction-item.current {
-    border: 1px solid var(--primary);
-    background: rgba(59, 130, 246, 0.1);
-}
-
-/* Стили для кнопок формы */
-.form-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.form-actions .btn {
-    flex: 1;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .page-header-content {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-    }
-    
-    .page-header-actions {
-        align-self: stretch;
-    }
-    
-    .btn-with-icon {
-        justify-content: center;
-        width: 100%;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-    }
-    
-    .quick-amounts-buttons {
-        justify-content: center;
-    }
-    
-    .content-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 480px) {
-    .operation-type-selector {
-        flex-direction: column;
-    }
-    
-    .operation-btn {
-        flex: 1;
-        justify-content: center;
-    }
-}
-</style>
 {% endblock %}
