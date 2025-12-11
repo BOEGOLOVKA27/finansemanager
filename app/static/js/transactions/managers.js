@@ -38,7 +38,7 @@ export class Managers {
      * manager.setQuickAmount(1000);
      */
     setQuickAmount(amount) {
-        const amountInput = document.getElementById('amount');
+        const amountInput = this.elm.amountInput;
         amountInput.value = amount.toLocaleString('ru-RU');
         amountInput.focus();
     }
@@ -53,7 +53,7 @@ export class Managers {
     fillCategoryModal(name, type) {
         document.getElementById('new_category_name').value = name;
         document.getElementById(`new_type_${type.toLowerCase()}`).checked = true;
-        openCategoryModal();
+        this.openCategoryModal();
     }
 
     /**

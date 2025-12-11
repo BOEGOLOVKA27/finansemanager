@@ -28,6 +28,8 @@ export class Events {
         this.setupAmountInputFormatting();
         this.setupTriggerInitialOperationTypeSync();
         this.setupValidateTransactionForm();
+        this.setupShortcutsAmount();
+        this.setupFillCategoryModal();
     }
 
     /**
@@ -150,5 +152,23 @@ export class Events {
                 event.preventDefault();
             }
         });
+    }
+
+    setupShortcutsAmount() {
+        this.elm.shortcutsAmount.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.mng.setQuickAmount(btn.dataset.amount);
+            });
+        });
+    }
+
+    setupFillCategoryModal() {
+        this.elm.popularCategoriesList.forEach(category => {
+            category.addEventListener('click', () => {
+                const categoryName = category.dataset.categoryName;
+                const categoryType = category.dataset.categoryType;
+                this.mng.fillCategoryModal(categoryName, categoryType);
+            })
+        })
     }
 }

@@ -79,11 +79,11 @@
                                 <!-- Быстрые суммы -->
                                 <div class="quick-amounts mt-3">
                                     <span class="quick-amounts-label">Быстрая сумма:</span>
-                                    <div class="quick-amounts-buttons">
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(100)">100</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(500)">500</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(1000)">1 000</button>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="setQuickAmount(5000)">5 000</button>
+                                    <div id="quick-amounts-buttons" class="quick-amounts-buttons">
+                                        <button type="button" class="btn btn-outline btn-sm" data-amount="100">100</button>
+                                        <button type="button" class="btn btn-outline btn-sm" data-amount="500">500</button>
+                                        <button type="button" class="btn btn-outline btn-sm" data-amount="1000">1 000</button>
+                                        <button type="button" class="btn btn-outline btn-sm" data-amount="5000">5 000</button>
                                     </div>
                                 </div>
                             </div>
@@ -189,10 +189,10 @@
                 <div class="card">
                     <div class="card-body">
                         <h3 class="card-title">Популярные категории</h3>
-                        <div class="popular-categories-list">
+                        <div id="popular-categories-list" class="popular-categories-list">
                             {% for popular in popular_categories %}
                             <div class="popular-category {{ 'income' if popular.operation_type == 'INCOME' else 'expense' }}" 
-                                 onclick="fillCategoryModal('{{ popular.name }}', '{{ popular.operation_type }}')">
+                                 data-category-name="{{ popular.name }}" data-category-type="{{ popular.operation_type }}">
                                 <i class="fas {{ popular.icon }}"></i>
                                 <span>{{ popular.name }}</span>
                             </div>

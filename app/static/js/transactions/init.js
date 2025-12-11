@@ -39,7 +39,9 @@ function getEditorElements() {
         transactionForm: document.getElementById('transactionForm'),
         categoryForm: document.getElementById('categoryForm'),
         operationTypes: document.querySelectorAll('input[name="operation_type"]'),
-        selectedOperation: document.querySelector('input[name="operation_type"]:checked')
+        selectedOperation: document.querySelector('input[name="operation_type"]:checked'),
+        shortcutsAmount: document.getElementById('quick-amounts-buttons').childNodes,
+        popularCategoriesList: document.getElementById('popular-categories-list').childNodes
     };
 }
 
