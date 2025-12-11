@@ -361,8 +361,7 @@ body {
 }
 
 .card:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(17, 24, 39, 1);
 }
 
 .card-body {
@@ -608,15 +607,11 @@ body {
     margin-bottom: 1rem;
 }
 
+.section-date,
 .section-title {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--text);
-}
-
-.section-date {
-    color: var(--text-light);
-    font-size: 0.9rem;
 }
 
 /* ===== STATS COMPONENTS ===== */
@@ -1495,7 +1490,7 @@ body {
     }
 
     .container {
-        padding: 0 1rem;
+        padding: 0 5px;
     }
 
     .card-body {

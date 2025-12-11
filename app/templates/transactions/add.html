@@ -92,7 +92,7 @@
                             <div class="form-group">
                                 <div class="form-header-with-action">
                                     <label for="category_id" class="form-label">Категория *</label>
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="openCategoryModal()">
+                                    <button id="create-category-btn" type="button" class="btn btn-outline btn-sm">
                                         <i class="fas fa-plus"></i>
                                         Новая категория
                                     </button>
@@ -246,12 +246,12 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="modal-title">Создать новую категорию</h3>
-            <button type="button" class="modal-close" onclick="closeCategoryModal()">
+            <button type="button" class="modal-close modal-close-btn">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="modal-body">
-            <form id="categoryForm">
+            <form id="categoryForm" data-action-url="{{ url_for('transactions.create_category_ajax') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
                 <div class="form-group">
@@ -296,7 +296,7 @@
                         <i class="fas fa-plus"></i>
                         Создать категорию
                     </button>
-                    <button type="button" class="btn btn-outline" onclick="closeCategoryModal()">
+                    <button type="button" class="btn btn-outline modal-close-btn">
                         Отмена
                     </button>
                 </div>
@@ -308,210 +308,7 @@
 
 {% block scripts %}
 {{ super() }}
-<script>
-// Форматирование суммы с разделителями тысяч
-function formatAmount(input) {
-    let value = input.value.replace(/[^\d.]/g, '');
-    
-    // Разделяем на целую и дробную части
-    let parts = value.split('.');
-    let integerPart = parts[0];
-    let decimalPart = parts.length > 1 ? '.' + parts[1].substring(0, 2) : '';
-    
-    // Форматируем целую часть с разделителями тысяч
-    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    
-    input.value = integerPart + decimalPart;
-}
 
-// Установка быстрой суммы
-function setQuickAmount(amount) {
-    const amountInput = document.getElementById('amount');
-    amountInput.value = amount.toLocaleString('ru-RU');
-    amountInput.focus();
-}
-
-// Заполнение модального окна популярными категориями
-function fillCategoryModal(name, type) {
-    document.getElementById('new_category_name').value = name;
-    document.getElementById(`new_type_${type.toLowerCase()}`).checked = true;
-    openCategoryModal();
-}
-
-// Модальное окно для создания категории
-function openCategoryModal() {
-    document.getElementById('categoryModal').style.display = 'flex';
-    document.getElementById('new_category_name').focus();
-}
-
-function closeCategoryModal() {
-    document.getElementById('categoryModal').style.display = 'none';
-    document.getElementById('categoryForm').reset();
-}
-
-// Закрытие модального окна при клике вне его
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById('categoryModal');
-    if (event.target === modal) {
-        closeCategoryModal();
-    }
-});
-
-// Обработка создания категории через AJAX
-document.getElementById('categoryForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch("{{ url_for('transactions.create_category_ajax') }}", {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Добавляем новую категорию в select
-            const categorySelect = document.getElementById('category_id');
-            const newOption = new Option(
-                data.category.name + ' (' + (data.category.operation_type === 'INCOME' ? 'Доход' : 'Расход') + ')',
-                data.category.id
-            );
-            newOption.setAttribute('data-type', data.category.operation_type);
-            categorySelect.appendChild(newOption);
-            categorySelect.value = data.category.id;
-            
-            // Закрываем модальное окно и очищаем форму
-            closeCategoryModal();
-            
-            // Показываем сообщение об успехе
-            showNotification('Категория успешно создана!', 'success');
-        } else {
-            // Показываем ошибки
-            alert('Ошибка: ' + data.errors.join(', '));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Произошла ошибка при создании категории');
-    });
-});
-
-// Синхронизация типа операции с выбранной категорией
-document.getElementById('category_id').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const operationType = selectedOption.getAttribute('data-type');
-    
-    if (operationType) {
-        document.getElementById(`type_${operationType.toLowerCase()}`).checked = true;
-    }
-});
-
-// Синхронизация списка категорий при выборе типа операции
-document.querySelectorAll('input[name="operation_type"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const categorySelect = document.getElementById('category_id');
-        const selectedType = this.value;
-        
-        // Показываем только категории выбранного типа
-        for (let option of categorySelect.options) {
-            if (option.value === '') continue;
-            
-            const categoryType = option.getAttribute('data-type');
-            if (categoryType === selectedType) {
-                option.style.display = '';
-            } else {
-                option.style.display = 'none';
-                // Если выбранная категория не подходит, сбрасываем выбор
-                if (option.selected && categoryType !== selectedType) {
-                    categorySelect.value = '';
-                }
-            }
-        }
-    });
-});
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    const amountInput = document.getElementById('amount');
-    
-    // Форматирование суммы при вводе
-    amountInput.addEventListener('input', function() {
-        formatAmount(this);
-    });
-    
-    // Форматирование при потере фокуса
-    amountInput.addEventListener('blur', function() {
-        let value = this.value.replace(/[^\d.]/g, '');
-        if (value) {
-            value = parseFloat(value).toFixed(2);
-            this.value = parseFloat(value).toLocaleString('ru-RU', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-    });
-    
-    // Автоматическая синхронизация категорий при загрузке
-    const selectedType = document.querySelector('input[name="operation_type"]:checked');
-    if (selectedType) {
-        selectedType.dispatchEvent(new Event('change'));
-    }
-});
-
-// Валидация формы транзакции
-document.getElementById('transactionForm').addEventListener('submit', function(e) {
-    const amountInput = document.getElementById('amount');
-    const operationType = document.querySelector('input[name="operation_type"]:checked');
-    const categoryId = document.getElementById('category_id').value;
-    
-    // Преобразуем отформатированную сумму в число
-    let amountValue = amountInput.value.replace(/\s/g, '').replace(',', '.');
-    amountValue = parseFloat(amountValue);
-    
-    let isValid = true;
-    
-    if (!operationType) {
-        alert('Выберите тип операции');
-        isValid = false;
-    } else if (!categoryId) {
-        alert('Выберите категорию');
-        isValid = false;
-    } else if (!amountValue || amountValue <= 0 || isNaN(amountValue)) {
-        alert('Введите корректную сумму');
-        isValid = false;
-    }
-    
-    if (!isValid) {
-        e.preventDefault();
-    } else {
-        // Устанавливаем неформатированное значение перед отправкой
-        amountInput.value = amountValue.toFixed(2);
-    }
-});
-
-// Вспомогательная функция для уведомлений
-function showNotification(message, type) {
-    // Простая реализация уведомления
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type} notification`;
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-</script>
+<script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 
 {% endblock %}

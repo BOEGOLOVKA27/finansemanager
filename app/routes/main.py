@@ -16,7 +16,16 @@ def index(page=1):
     if not current_user.is_authenticated:
         return render_template('index.html')
 
+    month = [
+        'Январь', 'Февраль', 'Март',
+        'Апрель', 'Май', 'Июнь',
+        'Июль', 'Август', 'Сентябрь',
+        'Октябрь', 'Ноябрь', 'Декабрь'
+    ]
+
     now = datetime.now()
+    
+    section_date = f'{month[now.month - 1]} {now.year}'
     
     # Получаем базовую статистику
     monthly_stats = current_user.get_balance_stats(now.year, now.month)
@@ -60,7 +69,7 @@ def index(page=1):
                         total_stats=total_stats,
                         categories_summary=categories_summary,
                         monthly_transactions=monthly_transactions,
-                        now=now,
+                        section_date=section_date,
                         page=page)
 
 

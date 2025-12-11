@@ -1,2 +1,7 @@
 /.venv
+/venv
 .env
+.gigaide
+.idea
+**/__pycache__/
+*.pyc
