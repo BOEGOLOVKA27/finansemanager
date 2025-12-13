@@ -1,7 +1,7 @@
 # app/routes/main.py
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from app.models import Transaction, Category
+from ..modules.models import *
 from app import db
 from sqlalchemy import func, case
 from datetime import datetime

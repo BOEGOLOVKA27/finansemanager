@@ -1,15 +1,14 @@
-# app/models/user.py
-from app import db
-from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+from . import *
 from flask_login import UserMixin
+from app import db
+from datetime import datetime, timedelta
+from ..models import Transaction
+from ..models import Category
+from config import config
 from sqlalchemy import func, extract
-from .transaction import Transaction
-from .category import Category
 
-from app import db
-from flask_login import UserMixin
-from datetime import datetime
+
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'

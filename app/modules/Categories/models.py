@@ -1,4 +1,3 @@
-# app/models/category.py
 from app import db
 from datetime import datetime
 
@@ -21,7 +20,7 @@ class Category(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'operation_type': self.operation_type,  # ← ДОБАВЛЕНО
+            'operation_type': self.operation_type,  
             'user_id': self.user_id,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()

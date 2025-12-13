@@ -1,13 +1,8 @@
-# app/routes/profile.py
-from flask import (render_template, request, redirect, url_for, flash, 
-                   Blueprint, session, jsonify)
-from flask_login import login_required, current_user, logout_user
-from werkzeug.security import check_password_hash, generate_password_hash
-from app import db
-from ..forms import ChangeLoginForm, ChangeEmailForm, ChangePasswordForm
+from . import *
 
 
-bp = Blueprint('profile', __name__)
+bp = bp_profile
+
 
 @bp.route('/')
 @login_required

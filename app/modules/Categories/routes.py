@@ -1,11 +1,5 @@
-# app/routes/categories.py
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
-from flask_login import login_required, current_user
-from app.models import Category, Transaction
-from app import db
-
-bp = Blueprint('categories', __name__, url_prefix='/categories')
-
+from . import *
+from ..Transaction.models import Transaction
 
 @bp.route('/')
 @login_required

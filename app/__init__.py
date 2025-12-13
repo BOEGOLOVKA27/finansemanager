@@ -6,13 +6,15 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from config import config
 from flask_wtf.csrf import CSRFProtect
-
+from flask_marshmallow import Marshmallow
+from marshmallow import fields, validate 
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
 csrf = CSRFProtect()
+ma = Marshmallow() 
 
 
 def create_app(config_name='default'):
@@ -25,6 +27,7 @@ def create_app(config_name='default'):
     login_manager.init_app(app)
     mail.init_app(app)
     csrf.init_app(app)
+    ma.init_app(app)
     
     # Настройка Flask-Login
     login_manager.login_view = 'auth.login'
@@ -32,7 +35,7 @@ def create_app(config_name='default'):
     login_manager.login_message_category = 'info'
     
     # Регистрация загрузчика пользователя
-    from app.models.user import User
+    from app.modules.User.models  import User
     
     @login_manager.user_loader
     def load_user(user_id):
@@ -46,19 +49,24 @@ def create_app(config_name='default'):
     return app
 
 def register_blueprints(app):
+
+    
     """Регистрация всех blueprint'ов"""
     from app.routes.main import bp as main_bp
-    from app.routes.auth import bp as auth_bp
-    from app.routes.transactions import bp as transactions_bp
-    from app.routes.categories import bp as categories_bp
-    from app.routes.profile import bp as profile_bp  
+    
+    from app.modules.User import bp_auth as auth_bp
+    
+    from app.modules.Transaction import bp as transactions_bp
+    from app.modules.Categories import bp as categories_bp
+    from app.modules.User import bp_profile as profile_bp  
+    from app.modules.Categories import api_bp  
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile') 
     app.register_blueprint(transactions_bp, url_prefix='/transactions')
     app.register_blueprint(categories_bp, url_prefix='/categories')
-
+    app.register_blueprint(api_bp) 
 
 
 def register_context_processors(app):

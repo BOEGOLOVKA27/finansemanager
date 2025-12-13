@@ -1,19 +1,7 @@
-# app/routes/auth.py
-from flask import (render_template, request, redirect, url_for, flash, 
-                   Blueprint, session, current_app)
-from werkzeug.security import generate_password_hash
-from flask_login import login_user, login_required, current_user, logout_user
-import secrets
-from app.models.user import User
-from app.models.category import Category
-from werkzeug.security import check_password_hash
-from app.forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm
-from datetime import datetime, timedelta
-from app import db, mail
-from flask_mail import Message
-from config import config
+from . import *
 
-bp = Blueprint('auth', __name__)
+
+bp = bp_auth
 
 @bp.route('/login', methods=['POST', 'GET'])
 def login():
