@@ -5,10 +5,9 @@ from flask import jsonify, request, Blueprint
 from .models import db
 from flask_login import current_user, login_required
 from .models import *
-
-api_bp = Blueprint('api', __name__, url_prefix='/api')
+from .. import api_bp
 
 bp = Blueprint('categories', __name__, url_prefix='/categories')
 
 from .routes import bp
-from .api import api_bp
+from .api import api_bp 

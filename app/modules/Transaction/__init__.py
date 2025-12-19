@@ -5,7 +5,12 @@ from app import db
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from datetime import datetime
 from .models import *
+from .. import api_bp
 
 bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 
 from .routes import bp
+from .api import api_bp 
+
+
+

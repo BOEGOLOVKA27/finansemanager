@@ -55,11 +55,13 @@ def register_blueprints(app):
     from app.routes.main import bp as main_bp
     
     from app.modules.User import bp_auth as auth_bp
+    from app.modules.User import bp_profile as profile_bp  
     
     from app.modules.Transaction import bp as transactions_bp
+
     from app.modules.Categories import bp as categories_bp
-    from app.modules.User import bp_profile as profile_bp  
-    from app.modules.Categories import api_bp  
+    from app.modules import api_bp
+
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
