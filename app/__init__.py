@@ -8,6 +8,8 @@ from config import config
 from flask_wtf.csrf import CSRFProtect
 from flask_marshmallow import Marshmallow
 from marshmallow import fields, validate 
+from flask_jwt_extended import JWTManager
+
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -15,7 +17,7 @@ login_manager = LoginManager()
 mail = Mail()
 csrf = CSRFProtect()
 ma = Marshmallow() 
-
+jwt = JWTManager()
 
 def create_app(config_name='default'):
     app = Flask(__name__)
@@ -28,7 +30,22 @@ def create_app(config_name='default'):
     mail.init_app(app)
     csrf.init_app(app)
     ma.init_app(app)
-    
+    jwt.init_app(app)
+
+    @jwt.user_lookup_loader
+    def user_lookup_callback(_jwt_header, jwt_data):
+        """
+        Колбэк для загрузки пользователя из JWT токена
+        """
+        identity = jwt_data["sub"]  # Получаем identity из токена
+        
+        # У вас identity = f'{user.id}' (строка), конвертируем в int
+        try:
+            user_id = int(identity)  # Преобразуем строку '5' в число 5
+            return User.query.get(user_id)  # Находим пользователя в БД
+        except (ValueError, TypeError):
+            return None
+
     # Настройка Flask-Login
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице.'
@@ -61,7 +78,9 @@ def register_blueprints(app):
 
     from app.modules.Categories import bp as categories_bp
     from app.modules import api_bp
-
+    
+    # Исключение API blueprint из CSRF защиты
+    csrf.exempt(api_bp)
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -117,3 +136,5 @@ def register_context_processors(app):
             format_datetime=format_datetime,
             now=datetime.now
         )
+        
+          

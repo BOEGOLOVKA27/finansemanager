@@ -1,11 +1,12 @@
 from datetime import datetime
 from flask import jsonify, request
-from flask_login import login_required, current_user
+from flask_login import login_required
 from . import *
+from flask_jwt_extended import get_jwt_identity, current_user
 
 
 @api_bp.route('/transactions', methods=['GET'])
-@login_required
+@jwt_required()
 def get_transactions():
     """Получить все транзакции пользователя"""
     # Базовый запрос
@@ -59,7 +60,7 @@ def get_transactions():
     })
 
 @api_bp.route('/transactions/<int:transaction_id>', methods=['GET'])
-@login_required
+@jwt_required()
 def get_transaction(transaction_id):
     """Получить одну транзакцию"""
     transaction = Transaction.query.filter_by(
@@ -76,7 +77,7 @@ def get_transaction(transaction_id):
     })
 
 @api_bp.route('/transactions', methods=['POST'])
-@login_required
+@jwt_required()
 def create_transaction():
     """Создать новую транзакцию"""
     data = request.get_json()
@@ -153,7 +154,7 @@ def create_transaction():
         }), 500
 
 @api_bp.route('/transactions/<int:transaction_id>', methods=['PUT'])
-@login_required
+@jwt_required()
 def update_transaction(transaction_id):
     """Обновить транзакцию"""
     transaction = Transaction.query.filter_by(
@@ -229,7 +230,7 @@ def update_transaction(transaction_id):
         }), 500
 
 @api_bp.route('/transactions/<int:transaction_id>', methods=['DELETE'])
-@login_required
+@jwt_required()
 def delete_transaction(transaction_id):
     """Удалить транзакцию"""
     transaction = Transaction.query.filter_by(
@@ -256,7 +257,7 @@ def delete_transaction(transaction_id):
         }), 500
 
 @api_bp.route('/transactions/summary', methods=['GET'])
-@login_required
+@jwt_required()
 def get_transactions_summary():
     """Получить сводку по транзакциям (доходы/расходы за период)"""
     # Параметры фильтрации

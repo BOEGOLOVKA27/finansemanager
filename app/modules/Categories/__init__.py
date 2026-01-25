@@ -6,6 +6,7 @@ from .models import db
 from flask_login import current_user, login_required
 from .models import *
 from .. import api_bp
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 bp = Blueprint('categories', __name__, url_prefix='/categories')
 

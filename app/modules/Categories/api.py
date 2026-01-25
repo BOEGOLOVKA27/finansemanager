@@ -1,8 +1,9 @@
 from . import *
+from flask_jwt_extended import get_jwt_identity, current_user
 
 
 @api_bp.route('/categories', methods=['GET'])
-@login_required
+@jwt_required()
 def get_categories():
     print('sadasdasddas')
     """Получить все категории пользователя"""
@@ -15,7 +16,7 @@ def get_categories():
     })
 
 @api_bp.route('/categories/<int:category_id>', methods=['GET'])
-@login_required
+@jwt_required()
 def get_category(category_id):
     """Получить одну категорию"""
     category = Category.query.filter_by(
@@ -32,7 +33,7 @@ def get_category(category_id):
     })
 
 @api_bp.route('/categories', methods=['POST'])
-@login_required
+@jwt_required()
 def create_category():
     """Создать новую категорию"""
     data = request.get_json()
@@ -71,7 +72,7 @@ def create_category():
     }), 201  # 201 = Created
 
 @api_bp.route('/categories/<int:category_id>', methods=['PUT'])
-@login_required
+@jwt_required()
 def update_category(category_id):
     """Обновить категорию"""
     category = Category.query.filter_by(
@@ -106,7 +107,7 @@ def update_category(category_id):
     })
 
 @api_bp.route('/categories/<int:category_id>', methods=['DELETE'])
-@login_required
+@jwt_required()
 def delete_category(category_id):
     """Удалить категорию"""
     category = Category.query.filter_by(
@@ -117,14 +118,25 @@ def delete_category(category_id):
     if not category:
         return jsonify({'status': 'error', 'message': 'Категория не найдена'}), 404
     
-    # Проверка на наличие транзакций
+    # Проверяем, есть ли связанные транзакции
     if category.transactions.count() > 0:
-        return jsonify({'status': 'error', 'message': 'Нельзя удалить категорию с транзакциями'}), 400
+        return jsonify({
+            'status': 'error', 
+            'message': 'Нельзя удалить категорию с транзакциями'
+        }), 400
     
-    db.session.delete(category)
-    db.session.commit()
-    
-    return jsonify({
-        'status': 'success',
-        'message': 'Категория удалена'
-    })
+    try:
+        db.session.delete(category)
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Категория успешно удалена'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'status': 'error',
+            'message': f'Ошибка при удалении категории: {str(e)}'
+        }), 500
