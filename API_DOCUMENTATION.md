@@ -323,3 +323,297 @@ Authorization: Bearer <ваш_токен>
   ```
 - 400: Некорректные данные запроса
 - 404: Категория не найдена
+
+### Теги
+
+#### GET /tags
+
+Получить все теги пользователя.
+
+**Ответы:**
+- 200: Список тегов
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "integer",
+        "name": "string",
+        "user_id": "integer",
+        "created_at": "string"
+      }
+    ]
+  }
+  ```
+
+#### GET /tags/{tag_id}
+
+Получить один тег по ID.
+
+**Ответы:**
+- 200: Данные тега
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "integer",
+      "name": "string",
+      "user_id": "integer",
+      "created_at": "string"
+    }
+  }
+  ```
+- 404: Тег не найден
+
+#### POST /tags
+
+Создать новый тег.
+
+**Тело запроса:**
+```json
+{
+  "name": "string"
+}
+```
+
+**Ответы:**
+- 201: Тег создан успешно
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "integer",
+      "name": "string",
+      "user_id": "integer",
+      "created_at": "string"
+    }
+  }
+  ```
+- 400: Некорректные данные запроса
+
+#### PUT /tags/{tag_id}
+
+Обновить тег.
+
+**Тело запроса:**
+```json
+{
+  "name": "string"
+}
+```
+
+**Ответы:**
+- 200: Тег обновлен успешно
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "integer",
+      "name": "string",
+      "user_id": "integer",
+      "created_at": "string"
+    }
+  }
+  ```
+- 400: Некорректные данные запроса
+- 404: Тег не найден
+
+#### DELETE /tags/{tag_id}
+
+Удалить тег.
+
+**Ответы:**
+- 200: Тег удален успешно
+  ```json
+  {
+    "status": "success",
+    "message": "Тег удалён"
+  }
+  ```
+- 404: Тег не найден
+
+### Задачи
+
+#### GET /tasks
+
+Получить все задачи пользователя с фильтрацией и пагинацией.
+
+**Параметры запроса:**
+- `completed` (boolean, опционально): Фильтр по статусу выполнения
+- `tag_ids` (string, опционально): Фильтр по ID тегов (через запятую)
+- `page` (integer, опционально, по умолчанию 1): Номер страницы
+- `per_page` (integer, опционально, по умолчанию 20): Количество элементов на странице
+
+**Ответы:**
+- 200: Список задач
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "integer",
+        "title": "string",
+        "description": "string",
+        "completed": "boolean",
+        "user_id": "integer",
+        "created_at": "string",
+        "updated_at": "string",
+        "tags": [
+          {
+            "id": "integer",
+            "name": "string",
+            "user_id": "integer",
+            "created_at": "string"
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "page": "integer",
+      "per_page": "integer",
+      "total": "integer",
+      "pages": "integer"
+    }
+  }
+  ```
+
+#### GET /tasks/{task_id}
+
+Получить одну задачу по ID.
+
+**Ответы:**
+- 200: Данные задачи
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "integer",
+      "title": "string",
+      "description": "string",
+      "completed": "boolean",
+      "user_id": "integer",
+      "created_at": "string",
+      "updated_at": "string",
+      "tags": [
+        {
+          "id": "integer",
+          "name": "string",
+          "user_id": "integer",
+          "created_at": "string"
+        }
+      ]
+    }
+  }
+  ```
+- 404: Задача не найдена
+
+#### POST /tasks
+
+Создать новую задачу.
+
+**Тело запроса:**
+```json
+{
+  "title": "string",
+  "description": "string (опционально)",
+  "completed": "boolean (опционально, по умолчанию false)",
+  "tag_ids": "array of integers (опционально)"
+}
+```
+
+**Ответы:**
+- 201: Задача создана успешно
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "integer",
+      "title": "string",
+      "description": "string",
+      "completed": "boolean",
+      "user_id": "integer",
+      "created_at": "string",
+      "updated_at": "string",
+      "tags": [
+        {
+          "id": "integer",
+          "name": "string",
+          "user_id": "integer",
+          "created_at": "string"
+        }
+      ]
+    }
+  }
+  ```
+- 400: Некорректные данные запроса
+
+#### PUT /tasks/{task_id}
+
+Обновить задачу.
+
+**Тело запроса:**
+```json
+{
+  "title": "string (опционально)",
+  "description": "string (опционально)",
+  "completed": "boolean (опционально)",
+  "tag_ids": "array of integers (опционально)"
+}
+```
+
+**Ответы:**
+- 200: Задача обновлена успешно
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "integer",
+      "title": "string",
+      "description": "string",
+      "completed": "boolean",
+      "user_id": "integer",
+      "created_at": "string",
+      "updated_at": "string",
+      "tags": [
+        {
+          "id": "integer",
+          "name": "string",
+          "user_id": "integer",
+          "created_at": "string"
+        }
+      ]
+    }
+  }
+  ```
+- 400: Некорректные данные запроса
+- 404: Задача не найдена
+
+#### DELETE /tasks/{task_id}
+
+Удалить задачу.
+
+**Ответы:**
+- 200: Задача удалена успешно
+  ```json
+  {
+    "status": "success",
+    "message": "Задача удалена"
+  }
+  ```
+- 404: Задача не найдена
+
+#### GET /tasks/summary
+
+Получить сводку по задачам.
+
+**Ответы:**
+- 200: Сводка по задачам
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "total": "integer",
+      "completed": "integer",
+      "pending": "integer"
+    }
+  }

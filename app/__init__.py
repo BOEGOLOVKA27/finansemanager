@@ -75,7 +75,6 @@ def register_blueprints(app):
     from app.modules.User import bp_profile as profile_bp  
     
     from app.modules.Transaction import bp as transactions_bp
-
     from app.modules.Categories import bp as categories_bp
     from app.modules import api_bp
     

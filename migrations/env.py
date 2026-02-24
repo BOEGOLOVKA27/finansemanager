@@ -31,11 +31,7 @@ def get_metadata():
         
         with app.app_context():
             # Импортируем все модели чтобы они зарегистрировались в метаданных
-            from app.models.user import User
-            from app.models.category import Category
-            from app.models.transaction import Transaction
-
-            
+            from app.modules.models import Category, Transaction, User, Tag, Task
             return current_app.extensions['migrate'].db.metadata
     except Exception as e:
         logger.error(f"Error getting metadata: {e}")
