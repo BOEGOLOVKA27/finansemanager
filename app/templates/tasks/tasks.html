@@ -32,14 +32,6 @@
                         <input type="text" id="taskTags" name="tags" class="form-input" placeholder="Введите теги через запятую">
                         <small class="form-hint">Например: работа, срочно, проект</small>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="taskCompleted" class="form-label">Статус</label>
-                        <select id="taskCompleted" name="completed" class="form-input">
-                            <option value="false">Не выполнена</option>
-                            <option value="true">Выполнена</option>
-                        </select>
-                    </div>
                 </div>
                 
                 <div class="form-actions">
@@ -422,8 +414,7 @@ let currentFilter = 'all';
 // Загрузка задач
 async function loadTasks() {
     try {
-        const response = await fetch('/api/tasks?per_page=100');
-        const data = await response.json();
+        const data = await serverAPI.get('/api/tasks', { per_page: 100 });
         
         if (data.status === 'success') {
             allTasks = data.data;
@@ -529,8 +520,7 @@ createTaskForm.addEventListener('submit', async (e) => {
         
         // Получаем все теги пользователя
         try {
-            const tagsResponse = await fetch('/api/tags');
-            const tagsData = await tagsResponse.json();
+            const tagsData = await serverAPI.get('/api/tags');
             
             if (tagsData.status === 'success') {
                 const existingTags = tagsData.data;
@@ -551,21 +541,11 @@ createTaskForm.addEventListener('submit', async (e) => {
     const taskData = {
         title: formData.get('title'),
         description: formData.get('description') || '',
-        completed: formData.get('completed') === 'true',
         tag_ids: tagIds
     };
     
     try {
-        const response = await fetch('/api/tasks', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(taskData)
-        });
-        
-        const data = await response.json();
+        const data = await serverAPI.post('/api/tasks', taskData);
         
         if (data.status === 'success') {
             // Добавляем новую задачу в список
@@ -592,16 +572,7 @@ createTaskForm.addEventListener('submit', async (e) => {
 // Переключение статуса задачи
 window.toggleTaskStatus = async (taskId, completed) => {
     try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ completed })
-        });
-        
-        const data = await response.json();
+        const data = await serverAPI.put(`/api/tasks/${taskId}`, { completed });
         
         if (data.status === 'success') {
             // Обновляем задачу в списке
@@ -631,14 +602,7 @@ window.deleteTask = async (taskId) => {
     }
     
     try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
-        
-        const data = await response.json();
+        const data = await serverAPI.delete(`/api/tasks/${taskId}`);
         
         if (data.status === 'success') {
             // Удаляем задачу из списка
@@ -667,19 +631,10 @@ window.editTask = async (taskId) => {
     const newDescription = prompt('Изменить описание:', task.description || '');
     
     try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                title: newTitle,
-                description: newDescription
-            })
+        const data = await serverAPI.put(`/api/tasks/${taskId}`, {
+            title: newTitle,
+            description: newDescription
         });
-        
-        const data = await response.json();
         
         if (data.status === 'success') {
             // Обновляем задачу в списке
