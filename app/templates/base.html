@@ -44,6 +44,11 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ url_for('main.tasks') }}" class="nav-link {% if request.endpoint == 'main.tasks' %}active{% endif %}">
+                            Задачи
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ url_for('main.feedback') }}" class="nav-link {% if request.endpoint == 'main.feedback' %}active{% endif %}">
                             Обратная связь
                         </a>

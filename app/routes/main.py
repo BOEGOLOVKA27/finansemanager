@@ -78,3 +78,10 @@ def index(page=1):
 def feedback():
     """Страница обратной связи"""
     return render_template('feedback.html')
+
+
+@bp.route('/tasks')
+@login_required
+def tasks():
+    """Страница управления задачами"""
+    return render_template('tasks/tasks.html')

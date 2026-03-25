@@ -5,10 +5,13 @@
 {% block content %}
 <!-- Compact Hero Section -->
 {% if current_user.is_authenticated %}
-<!-- Quick Add Button Floating -->
+<!-- Quick Add Buttons Floating -->
 <div class="floating-action">
     <a href="{{ url_for('transactions.add_transaction') }}" class="btn btn-primary btn-floating" title="Добавить транзакцию">
         <i class="fas fa-plus"></i>
+    </a>
+    <a href="{{ url_for('main.tasks') }}" class="btn btn-secondary btn-floating" style="bottom: 100px;" title="Управление задачами">
+        <i class="fas fa-tasks"></i>
     </a>
 </div>
 {% endif %}
@@ -249,6 +252,10 @@
                             <a href="{{ url_for('transactions.add_transaction') }}" class="quick-action primary">
                                 <i class="fas fa-plus-circle"></i>
                                 <span>Новая транзакция</span>
+                            </a>
+                            <a href="{{ url_for('main.tasks') }}" class="quick-action">
+                                <i class="fas fa-tasks"></i>
+                                <span>Управление задачами</span>
                             </a>
                             <a href="{{ url_for('categories.add_category') }}" class="quick-action">
                                 <i class="fas fa-tag"></i>
