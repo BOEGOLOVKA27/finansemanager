@@ -6,13 +6,20 @@
 <section class="tasks-section">
     <div class="section-header">
         <h2 class="section-title">Управление задачами</h2>
+        <button class="btn btn-primary" id="openCreateTaskBtn">
+            <i class="fas fa-plus"></i>
+            Новая задача
+        </button>
     </div>
 
-    <!-- Карточка создания задачи -->
-    <div class="card">
+    <!-- Карточка создания задачи (скрыта по умолчанию) -->
+    <div class="card" id="createTaskCard" style="display: none;">
         <div class="card-body">
             <div class="card-header">
                 <h3 class="card-title">Создать новую задачу</h3>
+                <button class="btn btn-outline btn-sm" id="closeCreateTaskBtn">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
             <form id="createTaskForm" class="task-form">
