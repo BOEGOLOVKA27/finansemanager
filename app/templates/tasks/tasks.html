@@ -399,6 +399,42 @@ import { ServerAPI } from '{{ url_for("static", filename="js/server.js") }}';
 
 const serverAPI = new ServerAPI();
 
+// Функция для получения и сохранения токена через сессию Flask
+async function fetchAndStoreToken() {
+    // Проверяем, есть ли уже токен
+    if (serverAPI.getAuthToken()) {
+        console.log('Токен уже существует');
+        return true;
+    }
+    
+    try {
+        // Запрашиваем токен через API, используя существующую сессию Flask
+        const response = await fetch('/api/auth/token', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin' // Отправляем куки сессии
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success' && data.access_token) {
+                // Сохраняем токен в localStorage
+                localStorage.setItem('access_token', data.access_token);
+                console.log('Токен успешно получен и сохранен');
+                return true;
+            }
+        }
+        console.error('Не удалось получить токен:', response.status);
+        return false;
+    } catch (error) {
+        console.error('Ошибка при получении токена:', error);
+        return false;
+    }
+}
+
 // Элементы DOM
 const createTaskForm = document.getElementById('createTaskForm');
 const tasksList = document.getElementById('tasksList');
@@ -413,6 +449,9 @@ let currentFilter = 'all';
 
 // Загрузка задач
 async function loadTasks() {
+    // Сначала убеждаемся, что токен получен
+    await fetchAndStoreToken();
+    
     try {
         const data = await serverAPI.get('/api/tasks', { per_page: 100 });
         

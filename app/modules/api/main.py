@@ -3,6 +3,7 @@ from . import *
 from flask_jwt_extended import create_access_token
 from datetime import timedelta
 from flask import request, jsonify
+from flask_login import current_user, login_required
 
 @api_bp.route('/auth/login', methods=['POST'])
 def api_login():
@@ -48,3 +49,30 @@ def api_login():
             'status': 'error', 
             'message': 'Неверный email/логин или пароль'
         }), 401
+
+
+@api_bp.route('/auth/token', methods=['GET'])
+@login_required
+def get_token():
+    """Получение JWT-токена для уже аутентифицированного пользователя через сессию Flask"""
+    user = current_user
+    
+    # Создаем JWT токен с дополнительной информацией
+    access_token = create_access_token(
+        identity=f'{user.id}',
+        expires_delta=timedelta(hours=24),
+        additional_claims={
+            'login': user.login,
+            'email': user.email
+        }
+    )
+    
+    return jsonify({
+        'status': 'success',
+        'access_token': access_token,
+        'user': {
+            'id': user.id,
+            'login': user.login,
+            'email': user.email
+        }
+    }), 200
