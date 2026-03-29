@@ -176,6 +176,20 @@
 
 <!-- В конце body, перед закрывающим тегом -->
 <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+
+{% if current_user.is_authenticated and session.get('jwt_token') %}
+<script>
+    // Сохранение JWT токена в localStorage при авторизации
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = "{{ session.get('jwt_token') }}";
+        if (token) {
+            localStorage.setItem('access_token', token);
+            console.log('JWT токен сохранен');
+        }
+    });
+</script>
+{% endif %}
+
 {% block scripts %}{% endblock %}
 </body>
 </html>

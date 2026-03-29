@@ -1,4 +1,6 @@
 from . import *
+from flask_jwt_extended import create_access_token
+import json
 
 
 bp = bp_auth
@@ -15,14 +17,19 @@ def login():
             (User.login == username_or_email) | (User.email == username_or_email)
         ).first()
 
-        print(user)
-        print(user.password)
-        print(password)
-        print(check_password_hash(user.password, password))
         if user and check_password_hash(user.password, password):
             login_user(user, remember=True)
+            
+            # Генерация JWT токена
+            access_token = create_access_token(identity=str(user.id))
+            
             flash('Успешная авторизация!', 'success')
-            return redirect(url_for('main.index'))  # ← Изменено на главную страницу финансов
+            response = redirect(url_for('main.index'))
+            
+            # Передаем токен через flash-сообщение для сохранения в JS
+            session['jwt_token'] = access_token
+            
+            return response
         else:
             flash('Неверный логин или пароль!', 'danger')
             return redirect(url_for('auth.login'))
@@ -36,6 +43,8 @@ def login():
 @login_required
 def logout():
     logout_user()
+    # Очищаем JWT токен из сессии
+    session.pop('jwt_token', None)
     flash('Выход выполнен!', 'success')
     return redirect(url_for('main.index'))  
 
@@ -124,6 +133,11 @@ def confirm_email(token):
     db.session.commit()
 
     login_user(new_user)
+    
+    # Генерация JWT токена для нового пользователя
+    access_token = create_access_token(identity=str(new_user.id))
+    session['jwt_token'] = access_token
+    
     flash('Вы успешно подтвердили ваш email.', 'success')
 
     return redirect(url_for('main.index'))  
