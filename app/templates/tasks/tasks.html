@@ -15,34 +15,34 @@
         </button>
     </div>
 
-    <!-- Кнопка фильтра под заголовком -->
-    <div class="filter-toolbar">
-        <div class="filter-container">
-            <button class="btn btn-icon" id="filterBtn" title="Фильтры и сортировка">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                <span>Фильтр</span>
+    <!-- Минималистичная панель фильтров -->
+    <div class="filter-panel">
+        <div class="filter-chips">
+            <button class="filter-chip active" data-filter-status="all">
+                Все задачи
+            </button>
+            <button class="filter-chip" data-filter-status="active">
+                В работе
+            </button>
+            <button class="filter-chip" data-filter-status="completed">
+                Выполнено
+            </button>
+        </div>
+        
+        <div class="filter-divider-vertical"></div>
+        
+        <div class="sort-dropdown">
+            <button class="sort-btn" id="sortBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                <span id="sortLabel">Сортировка</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             
-            <!-- Выпадающий список фильтров -->
-            <div class="filter-dropdown" id="filterDropdown" style="display: none;">
-                <div class="filter-section">
-                    <span class="filter-label">Сортировка</span>
-                    <div class="filter-options">
-                        <button class="filter-option" data-sort="date_desc">📅 По дате (новые)</button>
-                        <button class="filter-option" data-sort="date_asc">📅 По дате (старые)</button>
-                        <button class="filter-option" data-sort="alpha_asc">🔤 А-Я</button>
-                        <button class="filter-option" data-sort="alpha_desc">🔤 Я-А</button>
-                    </div>
-                </div>
-                <div class="filter-divider"></div>
-                <div class="filter-section">
-                    <span class="filter-label">Статус</span>
-                    <div class="filter-options">
-                        <button class="filter-option active" data-filter-status="all">Все</button>
-                        <button class="filter-option" data-filter-status="active">В работе</button>
-                        <button class="filter-option" data-filter-status="completed">Выполнено</button>
-                    </div>
-                </div>
+            <div class="sort-options" id="sortOptions" style="display: none;">
+                <button class="sort-option" data-sort="date_desc">📅 По дате (новые)</button>
+                <button class="sort-option" data-sort="date_asc">📅 По дате (старые)</button>
+                <button class="sort-option" data-sort="alpha_asc">🔤 А-Я</button>
+                <button class="sort-option" data-sort="alpha_desc">🔤 Я-А</button>
             </div>
         </div>
     </div>
@@ -97,28 +97,11 @@
         </div>
     </div>
 
-    <!-- Фильтры и поиск -->
-    <div class="tasks-filters">
-        <div class="filter-group">
-            <button class="filter-btn active" data-filter="all">
-                <i class="fas fa-list"></i>
-                Все
-            </button>
-            <button class="filter-btn" data-filter="pending">
-                <i class="fas fa-clock"></i>
-                В работе
-            </button>
-            <button class="filter-btn" data-filter="completed">
-                <i class="fas fa-check-circle"></i>
-                Выполненные
-            </button>
-        </div>
-        
-        <div class="search-group">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchTasks" class="search-input" placeholder="Поиск задач...">
-            </div>
+    <!-- Поиск задач -->
+    <div class="search-bar">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchTasks" class="search-input" placeholder="Поиск задач...">
         </div>
     </div>
 
@@ -168,108 +151,127 @@
     margin: 0;
 }
 
-.filter-toolbar {
+/* Минималистичная панель фильтров */
+.filter-panel {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
     margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: flex-start;
-}
-
-.filter-container {
-    position: relative;
-    display: inline-block;
-}
-
-.tasks-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.btn-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: auto;
-    height: 40px;
-    padding: 0 1rem;
-    background: var(--background-light);
+    padding: 1rem 1.5rem;
+    background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    color: var(--text);
+    border-radius: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-chips {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    padding: 0.5rem 1rem;
+    background: var(--background-light);
+    border: 1px solid transparent;
+    border-radius: 2rem;
+    color: var(--text-light);
+    font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.btn-icon:hover {
+.filter-chip:hover {
+    background: var(--background-lighter);
+    border-color: var(--primary);
+    color: var(--text);
+}
+
+.filter-chip.active {
     background: var(--primary);
     border-color: var(--primary);
     color: white;
 }
 
-/* Выпадающий список фильтров */
-.filter-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 100;
-    min-width: 220px;
-    margin-top: 0.5rem;
-    overflow: visible;
+.filter-divider-vertical {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    align-self: center;
 }
 
-.filter-section {
-    padding: 0.75rem;
+/* Выпадающий список сортировки */
+.sort-dropdown {
+    position: relative;
+    display: inline-block;
 }
 
-.filter-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-lighter);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
-}
-
-.filter-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.filter-option {
+.sort-btn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    background: var(--background-light);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
     color: var(--text);
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
-    text-align: left;
 }
 
-.filter-option:hover {
+.sort-btn:hover {
+    background: var(--background-lighter);
+    border-color: var(--primary);
+}
+
+.sort-btn .chevron-down {
+    transition: transform 0.2s;
+}
+
+.sort-btn.active .chevron-down {
+    transform: rotate(180deg);
+}
+
+.sort-options {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    min-width: 200px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sort-option {
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 0.875rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sort-option:hover {
     background: var(--background-light);
 }
 
-.filter-option.active {
-    background: var(--primary);
-    color: white;
+.sort-option:first-child {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
 }
 
-.filter-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 0.25rem 0.75rem;
+.sort-option:last-child {
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
 }
 
 .task-form {
@@ -339,68 +341,17 @@
     opacity: 1;
 }
 
-.tasks-filters {
+/* Панель поиска */
+.search-bar {
+    margin-bottom: 1.5rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 0.5rem 0 1.5rem 0;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.tag-filter-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 1rem;
-    background: var(--background-light);
-    border: 1px solid var(--primary);
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-}
-
-.tag-filter-info strong {
-    color: var(--primary);
-}
-
-.filter-group {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.filter-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--background-light);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    color: var(--text-light);
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.875rem;
-}
-
-.filter-btn:hover {
-    background: var(--background-lighter);
-    border-color: var(--primary);
-}
-
-.filter-btn.active {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-}
-
-.search-group {
-    flex: 1;
-    max-width: 400px;
+    justify-content: flex-start;
 }
 
 .search-box {
     position: relative;
+    width: 100%;
+    max-width: 400px;
 }
 
 .search-box i {
@@ -424,6 +375,22 @@
 .search-input:focus {
     outline: none;
     border-color: var(--primary);
+}
+
+.tag-filter-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--background-light);
+    border: 1px solid var(--primary);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.tag-filter-info strong {
+    color: var(--primary);
 }
 
 .tasks-list {
@@ -614,16 +581,17 @@
         grid-template-columns: 1fr;
     }
     
-    .tasks-filters {
+    .filter-panel {
         flex-direction: column;
         align-items: stretch;
+        gap: 1rem;
     }
     
-    .filter-group {
-        justify-content: center;
+    .filter-divider-vertical {
+        display: none;
     }
     
-    .search-group {
+    .search-bar {
         max-width: 100%;
     }
     
@@ -687,7 +655,6 @@ async function fetchAndStoreToken() {
 const createTaskForm = document.getElementById('createTaskForm');
 const tasksList = document.getElementById('tasksList');
 const searchInput = document.getElementById('searchTasks');
-const filterButtons = document.querySelectorAll('.filter-btn');
 const totalTasksEl = document.getElementById('totalTasks');
 const pendingTasksEl = document.getElementById('pendingTasks');
 const completedTasksEl = document.getElementById('completedTasks');
@@ -1231,17 +1198,6 @@ window.editTask = async (taskId) => {
     });
 };
 
-// Фильтрация задач
-filterButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        filterButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        currentFilter = btn.dataset.filter;
-        applyFilters();
-    });
-});
-
 // Поиск задач
 searchInput.addEventListener('input', applyFilters);
 
@@ -1313,9 +1269,6 @@ function applySortToTasks(tasks) {
 window.filterByTag = function(tagName) {
     currentTagFilter = tagName;
     
-    // Сбрасываем активный класс у кнопок фильтров
-    filterButtons.forEach(b => b.classList.remove('active'));
-    
     applyFilters();
 };
 
@@ -1333,8 +1286,9 @@ window.clearTagFilter = function() {
 const openCreateTaskBtn = document.getElementById('openCreateTaskBtn');
 const closeCreateTaskBtn = document.getElementById('closeCreateTaskBtn');
 const createTaskCard = document.getElementById('createTaskCard');
-const filterBtn = document.getElementById('filterBtn');
-const filterDropdown = document.getElementById('filterDropdown');
+const sortBtn = document.getElementById('sortBtn');
+const sortOptions = document.getElementById('sortOptions');
+const sortLabel = document.getElementById('sortLabel');
 
 if (openCreateTaskBtn) {
     openCreateTaskBtn.addEventListener('click', () => {
@@ -1352,43 +1306,53 @@ if (closeCreateTaskBtn) {
     });
 }
 
-// Обработка кнопки фильтров
-if (filterBtn && filterDropdown) {
-    filterBtn.addEventListener('click', (e) => {
+// Обработка чипсов фильтрации по статусу
+document.querySelectorAll('.filter-chip[data-filter-status]').forEach(chip => {
+    chip.addEventListener('click', () => {
+        const statusFilter = chip.dataset.filterStatus;
+        currentStatusFilter = statusFilter;
+        
+        // Обновляем активный класс
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        
+        applyFilters();
+    });
+});
+
+// Обработка кнопки сортировки
+if (sortBtn && sortOptions) {
+    sortBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        filterDropdown.style.display = filterDropdown.style.display === 'none' ? 'block' : 'none';
+        const isVisible = sortOptions.style.display === 'block';
+        sortOptions.style.display = isVisible ? 'none' : 'block';
+        sortBtn.classList.toggle('active', !isVisible);
     });
 
     // Закрытие dropdown при клике вне его
     document.addEventListener('click', (e) => {
-        if (!filterDropdown.contains(e.target) && e.target !== filterBtn) {
-            filterDropdown.style.display = 'none';
+        if (!sortOptions.contains(e.target) && e.target !== sortBtn) {
+            sortOptions.style.display = 'none';
+            sortBtn.classList.remove('active');
         }
     });
 
     // Обработчики для опций сортировки
-    filterDropdown.querySelectorAll('[data-sort]').forEach(option => {
+    sortOptions.querySelectorAll('[data-sort]').forEach(option => {
         option.addEventListener('click', () => {
             const sortType = option.dataset.sort;
             applySort(sortType);
             
-            // Обновляем активный класс
-            filterDropdown.querySelectorAll('[data-sort]').forEach(o => o.classList.remove('active'));
-            option.classList.add('active');
-        });
-    });
-
-    // Обработчики для опций статуса
-    filterDropdown.querySelectorAll('[data-filter-status]').forEach(option => {
-        option.addEventListener('click', () => {
-            const statusFilter = option.dataset.filterStatus;
-            currentStatusFilter = statusFilter;
-            
-            // Обновляем активный класс
-            filterDropdown.querySelectorAll('[data-filter-status]').forEach(o => o.classList.remove('active'));
-            option.classList.add('active');
-            
-            applyFilters();
+            // Обновляем текст кнопки и закрываем меню
+            const sortTexts = {
+                'date_desc': 'По дате (новые)',
+                'date_asc': 'По дате (старые)',
+                'alpha_asc': 'А-Я',
+                'alpha_desc': 'Я-А'
+            };
+            sortLabel.textContent = sortTexts[sortType] || 'Сортировка';
+            sortOptions.style.display = 'none';
+            sortBtn.classList.remove('active');
         });
     });
 }
