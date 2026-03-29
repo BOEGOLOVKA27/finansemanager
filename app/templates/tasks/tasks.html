@@ -32,9 +32,8 @@
         <div class="filter-divider-vertical"></div>
         
         <div class="sort-dropdown">
-            <button class="sort-btn" id="sortBtn">
+            <button class="sort-btn" id="sortBtn" title="Сортировка">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                <span id="sortLabel">Сортировка</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             
@@ -422,6 +421,22 @@
 .task-item.completed .task-title {
     text-decoration: line-through;
     color: var(--text-lighter);
+}
+
+.task-item.completed .task-action-btn {
+    color: white !important;
+    border-color: var(--border);
+}
+
+.task-item.completed .task-action-btn:hover {
+    background: var(--background-lighter);
+    border-color: var(--primary);
+    color: white !important;
+}
+
+.task-item.completed .task-action-btn.delete:hover {
+    border-color: var(--error);
+    color: white !important;
 }
 
 .task-checkbox {
@@ -1288,7 +1303,6 @@ const closeCreateTaskBtn = document.getElementById('closeCreateTaskBtn');
 const createTaskCard = document.getElementById('createTaskCard');
 const sortBtn = document.getElementById('sortBtn');
 const sortOptions = document.getElementById('sortOptions');
-const sortLabel = document.getElementById('sortLabel');
 
 if (openCreateTaskBtn) {
     openCreateTaskBtn.addEventListener('click', () => {
@@ -1343,14 +1357,7 @@ if (sortBtn && sortOptions) {
             const sortType = option.dataset.sort;
             applySort(sortType);
             
-            // Обновляем текст кнопки и закрываем меню
-            const sortTexts = {
-                'date_desc': 'По дате (новые)',
-                'date_asc': 'По дате (старые)',
-                'alpha_asc': 'А-Я',
-                'alpha_desc': 'Я-А'
-            };
-            sortLabel.textContent = sortTexts[sortType] || 'Сортировка';
+            // Закрываем меню
             sortOptions.style.display = 'none';
             sortBtn.classList.remove('active');
         });
