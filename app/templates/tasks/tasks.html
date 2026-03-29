@@ -5,38 +5,43 @@
 {% block content %}
 <section class="tasks-section">
     <div class="section-header">
-        <h2 class="section-title">Управление задачами</h2>
-        <div class="tasks-controls">
-            <button class="btn btn-icon" id="filterBtn" title="Фильтры и сортировка">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            </button>
-            <button class="btn btn-primary" id="openCreateTaskBtn">
-                <i class="fas fa-plus"></i>
-                Новая задача
-            </button>
-        </div>
-    </div>
-
-    <!-- Выпадающий список фильтров -->
-    <div class="filter-dropdown" id="filterDropdown" style="display: none;">
-        <div class="filter-section">
-            <span class="filter-label">Сортировка</span>
-            <div class="filter-options">
-                <button class="filter-option" data-sort="date_desc">📅 По дате (новые)</button>
-                <button class="filter-option" data-sort="date_asc">📅 По дате (старые)</button>
-                <button class="filter-option" data-sort="alpha_asc">🔤 А-Я</button>
-                <button class="filter-option" data-sort="alpha_desc">🔤 Я-А</button>
+        <div class="header-left">
+            <h2 class="section-title">Управление задачами</h2>
+            
+            <!-- Кнопка фильтра -->
+            <div class="filter-container" style="position: relative; display: inline-block;">
+                <button class="btn btn-icon" id="filterBtn" title="Фильтры и сортировка">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                </button>
+                
+                <!-- Выпадающий список фильтров -->
+                <div class="filter-dropdown" id="filterDropdown" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 5px;">
+                    <div class="filter-section">
+                        <span class="filter-label">Сортировка</span>
+                        <div class="filter-options">
+                            <button class="filter-option" data-sort="date_desc">📅 По дате (новые)</button>
+                            <button class="filter-option" data-sort="date_asc">📅 По дате (старые)</button>
+                            <button class="filter-option" data-sort="alpha_asc">🔤 А-Я</button>
+                            <button class="filter-option" data-sort="alpha_desc">🔤 Я-А</button>
+                        </div>
+                    </div>
+                    <div class="filter-divider"></div>
+                    <div class="filter-section">
+                        <span class="filter-label">Статус</span>
+                        <div class="filter-options">
+                            <button class="filter-option active" data-filter-status="all">Все</button>
+                            <button class="filter-option" data-filter-status="active">В работе</button>
+                            <button class="filter-option" data-filter-status="completed">Выполнено</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="filter-divider"></div>
-        <div class="filter-section">
-            <span class="filter-label">Статус</span>
-            <div class="filter-options">
-                <button class="filter-option active" data-filter-status="all">Все</button>
-                <button class="filter-option" data-filter-status="active">В работе</button>
-                <button class="filter-option" data-filter-status="completed">Выполнено</button>
-            </div>
-        </div>
+        
+        <button class="btn btn-primary" id="openCreateTaskBtn">
+            <i class="fas fa-plus"></i>
+            Новая задача
+        </button>
     </div>
 
     <!-- Карточка создания задачи (скрыта по умолчанию) -->
@@ -143,7 +148,21 @@
 }
 
 .section-header {
-    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.section-title {
+    margin: 0;
 }
 
 .tasks-controls {
@@ -177,7 +196,7 @@
 .filter-dropdown {
     position: absolute;
     top: 100%;
-    right: 0;
+    left: 0;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 0.5rem;
