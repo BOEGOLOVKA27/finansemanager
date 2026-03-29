@@ -335,11 +335,13 @@
 .task-date {
     color: var(--text-lighter);
     font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 .task-actions {
     display: flex;
     gap: 0.5rem;
+    margin-left: auto;
 }
 
 .task-action-btn {
@@ -540,25 +542,24 @@ function renderTasks(filteredTasks = null) {
                 ${task.description ? `<p class="task-description">${escapeHtml(task.description)}</p>` : ''}
                 
                 <div class="task-meta">
-                    <span class="task-date">
-                        <i class="far fa-calendar"></i>
-                        ${new Date(task.created_at).toLocaleDateString('ru-RU')}
-                    </span>
                     ${task.tags && task.tags.length > 0 ? `
                         <div class="task-tags">
                             ${task.tags.map(tag => `<span class="task-tag">#${escapeHtml(tag.name)}</span>`).join('')}
                         </div>
                     ` : ''}
+                    <span class="task-date">
+                        <i class="far fa-calendar"></i>
+                        ${new Date(task.created_at).toLocaleDateString('ru-RU')}
+                    </span>
+                    <div class="task-actions">
+                        <button class="task-action-btn" onclick="editTask(${task.id})" title="Редактировать">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="task-action-btn delete" onclick="deleteTask(${task.id})" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="task-actions">
-                <button class="task-action-btn" onclick="editTask(${task.id})" title="Редактировать">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="task-action-btn delete" onclick="deleteTask(${task.id})" title="Удалить">
-                    <i class="fas fa-trash"></i>
-                </button>
             </div>
         </div>
     `).join('');
@@ -643,6 +644,10 @@ function renderSelectedTags() {
     
     hiddenInput.value = selectedTags.join(',');
 }
+
+// Делаем функции доступными глобально
+window.addTag = addTag;
+window.removeTag = removeTag;
 
 // Обработчики для добавления тегов
 document.getElementById('addTagBtn').addEventListener('click', addTag);
