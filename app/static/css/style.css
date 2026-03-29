@@ -358,6 +358,8 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     border: 1px solid var(--border);
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .card:hover {
