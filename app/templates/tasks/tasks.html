@@ -9,13 +9,13 @@
             <h2 class="section-title">Управление задачами</h2>
             
             <!-- Кнопка фильтра -->
-            <div class="filter-container" style="position: relative; display: inline-block;">
+            <div class="filter-container">
                 <button class="btn btn-icon" id="filterBtn" title="Фильтры и сортировка">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                 </button>
                 
                 <!-- Выпадающий список фильтров -->
-                <div class="filter-dropdown" id="filterDropdown" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 5px;">
+                <div class="filter-dropdown" id="filterDropdown" style="display: none;">
                     <div class="filter-section">
                         <span class="filter-label">Сортировка</span>
                         <div class="filter-options">
@@ -159,10 +159,16 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    position: relative;
 }
 
 .section-title {
     margin: 0;
+}
+
+.filter-container {
+    position: relative;
+    display: inline-block;
 }
 
 .tasks-controls {
@@ -201,10 +207,10 @@
     border: 1px solid var(--border);
     border-radius: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 100;
+    z-index: 1000;
     min-width: 220px;
     margin-top: 0.5rem;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .filter-section {
