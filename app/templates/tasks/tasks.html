@@ -35,9 +35,16 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="taskTags" class="form-label">Теги</label>
-                        <input type="text" id="taskTags" name="tags" class="form-input" placeholder="Введите теги через запятую">
-                        <small class="form-hint">Например: работа, срочно, проект</small>
+                        <label for="taskTagInput" class="form-label">Теги</label>
+                        <div class="tag-input-wrapper">
+                            <input type="text" id="taskTagInput" class="form-input" placeholder="Введите тег и нажмите Добавить">
+                            <button type="button" class="btn btn-primary btn-sm" id="addTagBtn">
+                                <i class="fas fa-plus"></i> Добавить
+                            </button>
+                        </div>
+                        <div class="selected-tags" id="selectedTagsContainer"></div>
+                        <small class="form-hint">Добавляйте теги по одному, каждый будет с хештегом</small>
+                        <input type="hidden" id="taskTags" name="tags">
                     </div>
                 </div>
                 
@@ -135,6 +142,44 @@
     display: flex;
     gap: 1rem;
     justify-content: flex-start;
+}
+
+.tag-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tag-input-wrapper .form-input {
+    flex: 1;
+}
+
+.selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 32px;
+}
+
+.selected-tag-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--primary);
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    color: white;
+}
+
+.selected-tag-item .remove-tag {
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.selected-tag-item .remove-tag:hover {
+    opacity: 1;
 }
 
 .tasks-filters {
@@ -495,15 +540,15 @@ function renderTasks(filteredTasks = null) {
                 ${task.description ? `<p class="task-description">${escapeHtml(task.description)}</p>` : ''}
                 
                 <div class="task-meta">
-                    ${task.tags && task.tags.length > 0 ? `
-                        <div class="task-tags">
-                            ${task.tags.map(tag => `<span class="task-tag">${escapeHtml(tag.name)}</span>`).join('')}
-                        </div>
-                    ` : ''}
                     <span class="task-date">
                         <i class="far fa-calendar"></i>
                         ${new Date(task.created_at).toLocaleDateString('ru-RU')}
                     </span>
+                    ${task.tags && task.tags.length > 0 ? `
+                        <div class="task-tags">
+                            ${task.tags.map(tag => `<span class="task-tag">#${escapeHtml(tag.name)}</span>`).join('')}
+                        </div>
+                    ` : ''}
                 </div>
             </div>
             
@@ -548,6 +593,66 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// Массив для хранения выбранных тегов
+let selectedTags = [];
+
+// Функция для добавления тега
+function addTag() {
+    const tagInput = document.getElementById('taskTagInput');
+    const tagName = tagInput.value.trim();
+    
+    if (!tagName) {
+        return;
+    }
+    
+    // Проверяем, нет ли уже такого тега
+    if (selectedTags.some(t => t.toLowerCase() === tagName.toLowerCase())) {
+        showNotification('Такой тег уже добавлен', 'error');
+        return;
+    }
+    
+    selectedTags.push(tagName);
+    renderSelectedTags();
+    tagInput.value = '';
+    tagInput.focus();
+}
+
+// Функция для удаления тега
+function removeTag(tagName) {
+    selectedTags = selectedTags.filter(t => t !== tagName);
+    renderSelectedTags();
+}
+
+// Рендеринг выбранных тегов
+function renderSelectedTags() {
+    const container = document.getElementById('selectedTagsContainer');
+    const hiddenInput = document.getElementById('taskTags');
+    
+    if (selectedTags.length === 0) {
+        container.innerHTML = '';
+        hiddenInput.value = '';
+        return;
+    }
+    
+    container.innerHTML = selectedTags.map(tag => `
+        <span class="selected-tag-item">
+            #${escapeHtml(tag)}
+            <i class="fas fa-times remove-tag" onclick="removeTag('${tag.replace(/'/g, "\\'")}')"></i>
+        </span>
+    `).join('');
+    
+    hiddenInput.value = selectedTags.join(',');
+}
+
+// Обработчики для добавления тегов
+document.getElementById('addTagBtn').addEventListener('click', addTag);
+document.getElementById('taskTagInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag();
+    }
+});
+
 // Создание задачи
 createTaskForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -571,13 +676,25 @@ createTaskForm.addEventListener('submit', async (e) => {
             if (tagsData.status === 'success') {
                 const existingTags = tagsData.data;
                 
-                // Находим ID существующих тегов
-                tagNames.forEach(name => {
-                    const existingTag = existingTags.find(t => t.name.toLowerCase() === name.toLowerCase());
+                // Находим ID существующих тегов и создаем новые
+                for (const name of tagNames) {
+                    let existingTag = existingTags.find(t => t.name.toLowerCase() === name.toLowerCase());
+                    
                     if (existingTag) {
                         tagIds.push(existingTag.id);
+                    } else {
+                        // Создаем новый тег
+                        try {
+                            const newTagData = await serverAPI.post('/api/tags', { name: name });
+                            if (newTagData.status === 'success') {
+                                tagIds.push(newTagData.data.id);
+                                existingTags.push(newTagData.data);
+                            }
+                        } catch (tagError) {
+                            console.error('Error creating tag:', tagError);
+                        }
                     }
-                });
+                }
             }
         } catch (error) {
             console.error('Error fetching tags:', error);
@@ -600,6 +717,8 @@ createTaskForm.addEventListener('submit', async (e) => {
             updateStats();
             
             createTaskForm.reset();
+            selectedTags = [];
+            renderSelectedTags();
             
             // Показываем уведомление
             showNotification('Задача успешно создана!', 'success');

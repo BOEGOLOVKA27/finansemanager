@@ -530,6 +530,11 @@ body {
     background: var(--background-lighter);
 }
 
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
 .w-full {
     width: 100%;
 }
