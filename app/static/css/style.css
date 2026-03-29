@@ -1858,6 +1858,21 @@ body {
     background: var(--background-lighter);
 }
 
+.mini-task-checkbox {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.mini-task-checkbox:hover {
+    transform: scale(1.2);
+}
+
 .mini-task-item.completed .mini-task-title {
     text-decoration: line-through;
     color: var(--text-lighter);

@@ -185,7 +185,7 @@ def create_task():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
-@api_bp.route('/tasks/<int:task_id>', methods=['PUT'])
+@api_bp.route('/tasks/<int:task_id>', methods=['PUT', 'PATCH'])
 @jwt_required()
 def update_task(task_id):
     """Обновить задачу"""

@@ -186,6 +186,51 @@
             localStorage.setItem('access_token', token);
             console.log('JWT токен сохранен');
         }
+        
+        // Обработчик для отметки выполнения задач на главной странице
+        document.querySelectorAll('.mini-task-checkbox').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const taskItem = this.closest('.mini-task-item');
+                const taskId = taskItem.dataset.taskId;
+                const icon = this.querySelector('i');
+                const isCompleted = taskItem.classList.contains('completed');
+                
+                // Определяем новый статус (инвертируем текущий)
+                const newStatus = !isCompleted;
+                
+                // Отправляем запрос на обновление задачи
+                fetch(`/api/tasks/${taskId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    body: JSON.stringify({ completed: newStatus })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Обновляем UI
+                        taskItem.classList.toggle('completed');
+                        icon.className = newStatus 
+                            ? 'fas fa-check-circle text-success' 
+                            : 'fas fa-circle text-warning';
+                        this.title = newStatus 
+                            ? 'Отметить как невыполненную' 
+                            : 'Отметить как выполненную';
+                    } else {
+                        console.error('Ошибка при обновлении задачи');
+                        alert('Не удалось обновить статус задачи');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при обновлении задачи');
+                });
+            });
+        });
     });
 </script>
 {% endif %}

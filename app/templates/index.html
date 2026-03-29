@@ -353,8 +353,10 @@
                             {% if tasks %}
                             <div class="mini-tasks-list">
                                 {% for task in tasks %}
-                                <div class="mini-task-item {{ 'completed' if task.completed else '' }}">
-                                    <i class="fas {% if task.completed %}fa-check-circle text-success{% else %}fa-circle text-warning{% endif %}"></i>
+                                <div class="mini-task-item {{ 'completed' if task.completed else '' }}" data-task-id="{{ task.id }}">
+                                    <button class="mini-task-checkbox" title="{% if task.completed %}Отметить как невыполненную{% else %}Отметить как выполненную{% endif %}">
+                                        <i class="fas {% if task.completed %}fa-check-circle text-success{% else %}fa-circle text-warning{% endif %}"></i>
+                                    </button>
                                     <span class="mini-task-title">{{ task.title[:40] }}{% if task.title|length > 40 %}...{% endif %}</span>
                                 </div>
                                 {% endfor %}
