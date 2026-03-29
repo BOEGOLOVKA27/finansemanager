@@ -31,8 +31,7 @@ class User(UserMixin, db.Model):
                                cascade='all, delete-orphan', lazy='dynamic')
     transactions = db.relationship('Transaction', back_populates='user',
                                  cascade='all, delete-orphan', lazy='dynamic')
-    tasks = db.relationship('Task', back_populates='user',
-                          cascade='all, delete-orphan', lazy='dynamic')
+    
     def set_password(self, password):
         self.password = generate_password_hash(password)
     
