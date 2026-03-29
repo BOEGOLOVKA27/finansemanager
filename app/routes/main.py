@@ -64,13 +64,23 @@ def index(page=1):
                 'transaction_count': len(category_transactions)
             })
     
+    # Получаем задачи пользователя
+    all_tasks = current_user.tasks.order_by(Task.created_at.desc()).limit(5).all()
+    tasks_summary = {
+        'total': current_user.tasks.count(),
+        'completed': current_user.tasks.filter_by(completed=True).count(),
+        'pending': current_user.tasks.filter_by(completed=False).count()
+    }
+    
     return render_template('index.html',
                         monthly_stats=monthly_stats,
                         total_stats=total_stats,
                         categories_summary=categories_summary,
                         monthly_transactions=monthly_transactions,
                         section_date=section_date,
-                        page=page)
+                        page=page,
+                        tasks=all_tasks,
+                        tasks_summary=tasks_summary)
 
 
 

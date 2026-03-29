@@ -321,6 +321,57 @@
                     </div>
                 </div>
                 {% endif %}
+
+                <!-- Tasks Widget -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3 class="card-title">Задачи</h3>
+                            <a href="{{ url_for('main.tasks') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i>
+                                Все задачи
+                            </a>
+                        </div>
+                        
+                        {% if tasks_summary.total > 0 %}
+                        <div class="tasks-summary-widget">
+                            <div class="task-stats-row">
+                                <div class="task-stat">
+                                    <span class="task-stat-label">Всего</span>
+                                    <span class="task-stat-value">{{ tasks_summary.total }}</span>
+                                </div>
+                                <div class="task-stat">
+                                    <span class="task-stat-label">Выполнено</span>
+                                    <span class="task-stat-value text-success">{{ tasks_summary.completed }}</span>
+                                </div>
+                                <div class="task-stat">
+                                    <span class="task-stat-label">В работе</span>
+                                    <span class="task-stat-value text-warning">{{ tasks_summary.pending }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if tasks %}
+                            <div class="mini-tasks-list">
+                                {% for task in tasks %}
+                                <div class="mini-task-item {{ 'completed' if task.completed else '' }}">
+                                    <i class="fas {% if task.completed %}fa-check-circle text-success{% else %}fa-circle text-warning{% endif %}"></i>
+                                    <span class="mini-task-title">{{ task.title[:40] }}{% if task.title|length > 40 %}...{% endif %}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-tasks"></i>
+                            <p>Нет задач</p>
+                            <a href="{{ url_for('main.tasks') }}" class="btn btn-primary btn-sm">
+                                Создать задачу
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>

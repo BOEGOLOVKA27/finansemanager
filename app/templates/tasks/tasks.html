@@ -738,6 +738,27 @@ function applyFilters() {
     renderTasks(filtered);
 }
 
+// Открытие/закрытие формы создания задачи
+const openCreateTaskBtn = document.getElementById('openCreateTaskBtn');
+const closeCreateTaskBtn = document.getElementById('closeCreateTaskBtn');
+const createTaskCard = document.getElementById('createTaskCard');
+
+if (openCreateTaskBtn) {
+    openCreateTaskBtn.addEventListener('click', () => {
+        createTaskCard.style.display = 'block';
+        openCreateTaskBtn.style.display = 'none';
+        document.getElementById('taskTitle').focus();
+    });
+}
+
+if (closeCreateTaskBtn) {
+    closeCreateTaskBtn.addEventListener('click', () => {
+        createTaskCard.style.display = 'none';
+        openCreateTaskBtn.style.display = 'flex';
+        createTaskForm.reset();
+    });
+}
+
 // Показ уведомления
 function showNotification(message, type = 'info') {
     const alertClass = type === 'success' ? 'alert-success' : 

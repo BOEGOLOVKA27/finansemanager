@@ -1797,3 +1797,69 @@ body {
         flex: 1;
     }
 }
+/* Tasks Widget Styles */
+.tasks-summary-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.task-stats-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--background-light);
+    border-radius: 0.5rem;
+}
+
+.task-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.task-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-lighter);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.task-stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.mini-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mini-task-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--background-light);
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.mini-task-item:hover {
+    background: var(--background-lighter);
+}
+
+.mini-task-item.completed .mini-task-title {
+    text-decoration: line-through;
+    color: var(--text-lighter);
+}
+
+.mini-task-title {
+    font-size: 0.875rem;
+    color: var(--text);
+    flex: 1;
+}
