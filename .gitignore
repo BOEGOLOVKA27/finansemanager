@@ -1,52 +1,24 @@
-# Examples 1:
-# Project with only source/config files
-
-# Example 2:
-# Project with artifacts
-*.pyc
+```
+# Python
 __pycache__/
-*.o
-*.obj
-dist/
-build/
-.venv/
-venv/
-node_modules/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and temp files
 *.log
 *.tmp
-*.swp
+
+# Environment
 .env
 .env.local
-.env.*
+*.env.*
+
+# Editors
 .vscode/
 .idea/
-target/
-.gradle/
-.mypy_cache/
-.pytest_cache/
-coverage/
-htmlcov/
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+
+# OS
 .DS_Store
 Thumbs.db
+```

@@ -55,3 +55,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Восстановление JWT токена из sessionStorage при перезагрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Проверяем, есть ли токен в sessionStorage (сохранен после входа)
+    const storedToken = sessionStorage.getItem('access_token');
+    if (storedToken) {
+        localStorage.setItem('access_token', storedToken);
+        console.log('JWT токен восстановлен из sessionStorage');
+    }
+    
+    // Также проверяем, есть ли токен в localStorage (для случаев когда сессия активна)
+    const localToken = localStorage.getItem('access_token');
+    if (localToken) {
+        console.log('JWT токен найден в localStorage');
+    }
+});
+
+// Очистка токенов при выходе пользователя
+function clearAuthTokens() {
+    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('access_token');
+    console.log('JWT токены очищены');
+}

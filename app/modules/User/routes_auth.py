@@ -23,6 +23,10 @@ def login():
             # Генерация JWT токена
             access_token = create_access_token(identity=str(user.id))
             
+            # Сохраняем токен в базе данных
+            user.token = access_token
+            db.session.commit()
+            
             flash('Успешная авторизация!', 'success')
             response = redirect(url_for('main.index'))
             
@@ -42,6 +46,10 @@ def login():
 @bp.route('/logout')
 @login_required
 def logout():
+    # Очищаем токен в базе данных перед выходом
+    current_user.token = None
+    db.session.commit()
+    
     logout_user()
     # Очищаем JWT токен из сессии
     session.pop('jwt_token', None)
@@ -136,6 +144,11 @@ def confirm_email(token):
     
     # Генерация JWT токена для нового пользователя
     access_token = create_access_token(identity=str(new_user.id))
+    
+    # Сохраняем токен в базе данных
+    new_user.token = access_token
+    db.session.commit()
+    
     session['jwt_token'] = access_token
     
     flash('Вы успешно подтвердили ваш email.', 'success')
