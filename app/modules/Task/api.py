@@ -255,3 +255,35 @@ def get_tasks_summary():
             'pending': pending
         }
     })
+
+
+@api_bp.route('/tags/popular', methods=['GET'])
+@jwt_required()
+def get_popular_tags():
+    """Получить самые используемые теги пользователя"""
+    from sqlalchemy import func
+    
+    # Получаем теги, отсортированные по количеству использований в задачах
+    popular_tags = db.session.query(
+        Tag.id,
+        Tag.name,
+        func.count(task_tags.c.task_id).label('usage_count')
+    ).outerjoin(
+        task_tags,
+        Tag.id == task_tags.c.tag_id
+    ).filter(
+        Tag.user_id == current_user.id
+    ).group_by(
+        Tag.id, Tag.name
+    ).order_by(
+        func.count(task_tags.c.task_id).desc(),
+        Tag.created_at.desc()
+    ).limit(5).all()
+    
+    return jsonify({
+        'status': 'success',
+        'data': [
+            {'id': tag.id, 'name': tag.name, 'usage_count': tag.usage_count}
+            for tag in popular_tags
+        ]
+    })

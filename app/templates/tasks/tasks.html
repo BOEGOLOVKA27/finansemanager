@@ -119,6 +119,21 @@
         </div>
     </div>
 
+    <!-- Популярные теги -->
+    <div class="card" id="popularTagsCard">
+        <div class="card-body">
+            <div class="card-header">
+                <h3 class="card-title">Популярные теги</h3>
+            </div>
+            <div id="popularTagsList" class="popular-tags-list">
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Загрузка тегов...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Список задач -->
     <div class="card">
         <div class="card-body">
@@ -1402,7 +1417,40 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+// Загрузка популярных тегов
+async function loadPopularTags() {
+    try {
+        const response = await serverAPI.get('/api/tags/popular');
+        const tagsList = document.getElementById('popularTagsList');
+        
+        if (response.data && response.data.length > 0) {
+            tagsList.innerHTML = response.data.map(tag => `
+                <div class="popular-tag-item">
+                    <span class="tag-badge">#${tag.name}</span>
+                    <span class="tag-count">${tag.usage_count} задач</span>
+                </div>
+            `).join('');
+        } else {
+            tagsList.innerHTML = `
+                <div class="empty-state" style="padding: 1rem;">
+                    <i class="fas fa-tags"></i>
+                    <p>Нет популярных тегов</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки популярных тегов:', error);
+        document.getElementById('popularTagsList').innerHTML = `
+            <div class="empty-state" style="padding: 1rem;">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Не удалось загрузить теги</p>
+            </div>
+        `;
+    }
+}
+
 // Инициализация
 loadTasks();
+loadPopularTags();
 </script>
 {% endblock %}

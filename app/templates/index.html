@@ -244,6 +244,29 @@
                     </div>
                 </div>
 
+                <!-- Popular Tags -->
+                {% if popular_tags %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3 class="card-title">Популярные теги</h3>
+                            <a href="{{ url_for('main.tasks') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-tasks"></i>
+                                Задачи
+                            </a>
+                        </div>
+                        <div class="popular-tags-list">
+                            {% for tag in popular_tags %}
+                            <div class="popular-tag-item">
+                                <span class="tag-badge">#{{ tag.name }}</span>
+                                <span class="tag-count">{{ tag.usage_count }} задач</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Quick Actions -->
                 <div class="card">
                     <div class="card-body">
