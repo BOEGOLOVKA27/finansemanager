@@ -3,6 +3,16 @@
 {% block title %}Задачи — FinanceTrack{% endblock %}
 
 {% block content %}
+<!-- Sidebar Popular Tags -->
+<div class="sidebar-tags" id="sidebarPopularTags">
+    <h4 class="card-title">🔥 Популярные теги</h4>
+    <div class="popular-tags-list" id="sidebarTagsList">
+        <div class="loading-state" style="padding: 0.5rem; font-size: 0.75rem;">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+    </div>
+</div>
+
 <section class="tasks-section">
     <div class="section-header">
         <div class="header-left">
@@ -1446,6 +1456,43 @@ async function loadPopularTags() {
                 <p>Не удалось загрузить теги</p>
             </div>
         `;
+    }
+    
+    // Also load sidebar tags
+    loadSidebarPopularTags();
+}
+
+// Load popular tags for sidebar
+async function loadSidebarPopularTags() {
+    const container = document.getElementById('sidebarTagsList');
+    if (!container) return;
+    
+    try {
+        const response = await fetch('/api/tags/popular', {
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+            }
+        });
+        
+        if (response.ok) {
+            const tags = await response.json();
+            
+            if (tags && tags.length > 0) {
+                container.innerHTML = tags.map(tag => `
+                    <div class="popular-tag-item">
+                        <span class="tag-badge">#${tag.name}</span>
+                        <span class="tag-count">${tag.usage_count}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-lighter); padding: 0.5rem;">Нет тегов</div>';
+            }
+        } else {
+            container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-lighter); padding: 0.5rem;">Нет тегов</div>';
+        }
+    } catch (error) {
+        console.error('Error loading popular tags:', error);
+        container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-lighter); padding: 0.5rem;">Ошибка</div>';
     }
 }
 

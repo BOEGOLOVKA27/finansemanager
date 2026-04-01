@@ -589,6 +589,7 @@ body {
 /* ===== MAIN CONTENT GRID ===== */
 .main-content {
     padding: 2rem 0;
+    position: relative;
 }
 
 .content-grid {
@@ -602,6 +603,52 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+/* ===== SIDEBAR POPULAR TAGS ===== */
+.sidebar-tags {
+    position: fixed;
+    right: -20px;
+    top: 100px;
+    width: 220px;
+    background: var(--background-light);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem 0 0 0.75rem;
+    padding: 1rem;
+    box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 90;
+}
+
+.sidebar-tags .card-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-light);
+}
+
+.sidebar-tags .popular-tags-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-tags .popular-tag-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0.6rem;
+    background: var(--background-lighter);
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.sidebar-tags .tag-badge {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.sidebar-tags .tag-count {
+    font-size: 0.7rem;
+    color: var(--text-lighter);
 }
 
 /* ===== SECTION HEADER ===== */
