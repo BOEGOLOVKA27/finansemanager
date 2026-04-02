@@ -144,20 +144,6 @@
         </div>
     </div>
 
-    <!-- Боковая панель: Популярные теги -->
-    <aside class="tasks-sidebar">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">🔥 Популярные теги</h4>
-                <div id="popularTagsList" class="popular-tags-list">
-                    <div class="loading-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <span>Загрузка тегов...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </aside>
 </div>
 </section>
 
@@ -167,19 +153,12 @@
 }
 
 .tasks-layout {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 1.5rem;
-    align-items: start;
+    display: block;
+    max-width: 100%;
 }
 
 .tasks-main-content {
-    min-width: 0;
-}
-
-.tasks-sidebar {
-    position: sticky;
-    top: 1rem;
+    width: 100%;
 }
 
 .section-header {

@@ -73,24 +73,6 @@ def index(page=1):
         'pending': current_user.tasks.filter_by(completed=False).count()
     }
     
-    # Получаем популярные теги
-    from sqlalchemy import func
-    popular_tags = db.session.query(
-        Tag.id,
-        Tag.name,
-        func.count(task_tags.c.task_id).label('usage_count')
-    ).outerjoin(
-        task_tags,
-        Tag.id == task_tags.c.tag_id
-    ).filter(
-        Tag.user_id == current_user.id
-    ).group_by(
-        Tag.id, Tag.name
-    ).order_by(
-        func.count(task_tags.c.task_id).desc(),
-        Tag.created_at.desc()
-    ).limit(5).all()
-    
     return render_template('index.html',
                         monthly_stats=monthly_stats,
                         total_stats=total_stats,
@@ -99,8 +81,7 @@ def index(page=1):
                         section_date=section_date,
                         page=page,
                         tasks=all_tasks,
-                        tasks_summary=tasks_summary,
-                        popular_tags=popular_tags)
+                        tasks_summary=tasks_summary)
 
 
 
