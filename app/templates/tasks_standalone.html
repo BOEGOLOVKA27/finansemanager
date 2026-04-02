@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задачи — FinanceTrack</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --text: #f1f5f9;
+            --text-light: #e2e8f0;
+            --text-lighter: #94a3b8;
+            --background: #0a0f1c;
+            --background-light: #111827;
+            --background-lighter: #1f2937;
+            --border: #374151;
+            --error: #ef4444;
+            --success: #10b981;
+            --gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: var(--background); color: var(--text); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .page-header { background: var(--background-light); border-bottom: 1px solid var(--border); padding: 2rem 0; margin-bottom: 2rem; }
+        .header-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .header-title { font-size: 2rem; font-weight: 700; }
+        .btn-add { background: var(--gradient); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600; }
+        .tasks-toolbar { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .filter-btn { padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-light); cursor: pointer; }
+        .filter-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .tasks-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .task-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--background-light); border-radius: 0.5rem; border: 1px solid var(--border); }
+        .task-item.completed { opacity: 0.7; }
+        .task-title { flex: 1; }
+        .task-title.completed { text-decoration: line-through; color: var(--text-lighter); }
+        .task-checkbox input { width: 20px; height: 20px; cursor: pointer; }
+        .task-actions { display: flex; gap: 0.5rem; }
+        .task-action-btn { padding: 0.5rem; background: transparent; border: none; color: var(--text-light); cursor: pointer; border-radius: 0.25rem; }
+        .task-action-btn.edit:hover { background: var(--primary); color: white; }
+        .task-action-btn.delete:hover { background: var(--error); color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--background); border-radius: 1rem; width: 90%; max-width: 500px; padding: 1.5rem; border: 1px solid var(--border); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-input { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--background); color: var(--text); }
+        .form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 500; }
+        .btn-primary { background: var(--gradient); color: white; }
+        .btn-secondary { background: var(--background-lighter); color: var(--text); border: 1px solid var(--border); }
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-light); }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <div class="header-main">
+                <h1 class="header-title">Задачи</h1>
+                <button class="btn-add" onclick="openModal()">+ Новая задача</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="tasks-toolbar">
+            <button class="filter-btn active" data-filter="all">Все</button>
+            <button class="filter-btn" data-filter="pending">Активные</button>
+            <button class="filter-btn" data-filter="completed">Выполненные</button>
+        </div>
+
+        <div class="tasks-list" id="tasksList">
+            <div class="empty-state" id="emptyState">
+                <p>Нет задач</p>
+                <button class="btn btn-primary" onclick="openModal()">Создать первую</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Новая задача</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+                <div class="form-group">
+                    <label class="form-label">Название *</label>
+                    <input type="text" class="form-input" id="taskTitle" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Описание</label>
+                    <textarea class="form-input" id="taskDescription" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let tasks = [];
+        let currentFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', loadTasks);
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderTasks();
+            });
+        });
+
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveTask();
+        });
+
+        async function loadTasks() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch(`${API_BASE}/tasks`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    tasks = data.data || [];
+                    renderTasks();
+                } else if (response.status === 401) {
+                    alert('❌ Требуется авторизация. Войдите в аккаунт.');
+                    window.location.href = '/auth/login';
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    console.error('API Error:', response.status, error);
+                    alert(`❌ Ошибка ${response.status}: ${error.message || 'Неизвестная ошибка'}`);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                alert('❌ Ошибка соединения с сервером');
+            }
+        }
+
+        async function saveTask() {
+            const taskId = document.getElementById('taskId').value;
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+
+            if (!title) {
+                alert('⚠️ Введите название задачи');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const url = taskId ? `${API_BASE}/tasks/${taskId}` : `${API_BASE}/tasks`;
+                const method = taskId ? 'PUT' : 'POST';
+
+                console.log('📤 Sending:', { title, description });
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title, description, completed: false })
+                });
+
+                const responseData = await response.json().catch(() => ({}));
+                console.log('📥 Response:', response.status, responseData);
+
+                if (response.ok) {
+                    closeModal();
+                    await loadTasks();
+                    alert('✅ Задача сохранена!');
+                } else {
+                    alert(`❌ Ошибка: ${responseData.message || response.status}`);
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('❌ Ошибка сохранения');
+            }
+        }
+
+        async function toggleTask(taskId) {
+            try {
+                const token = localStorage.getItem('access_token');
+                const task = tasks.find(t => t.id === taskId);
+
+                const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ completed: !task.completed })
+                });
+
+                if (response.ok) {
+                    task.completed = !task.completed;
+                    renderTasks();
+                }
+            } catch (error) {
+                console.error('Toggle error:', error);
+            }
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasksList');
+            const emptyState = document.getElementById('emptyState');
+
+            let filtered = tasks;
+            if (currentFilter === 'completed') filtered = tasks.filter(t => t.completed);
+            else if (currentFilter === 'pending') filtered = tasks.filter(t => !t.completed);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.innerHTML = filtered.map(task => `
+                <div class="task-item ${task.completed ? 'completed' : ''}">
+                    <input type="checkbox" class="task-checkbox" 
+                        ${task.completed ? 'checked' : ''} 
+                        onchange="toggleTask(${task.id})">
+                    <div class="task-title ${task.completed ? 'completed' : ''}">${escapeHtml(task.title)}</div>
+                    <div class="task-actions">
+                        <button class="task-action-btn edit" onclick="editTask(${task.id})">✏️</button>
+                        <button class="task-action-btn delete" onclick="deleteTask(${task.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openModal() {
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            document.getElementById('modalTitle').textContent = 'Новая задача';
+            document.getElementById('taskModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('taskModal').style.display = 'none';
+        }
+
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            document.getElementById('taskId').value = task.id;
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description || '';
+            document.getElementById('modalTitle').textContent = 'Редактировать задачу';
+            document.getElementById('taskModal').style.display = 'flex';
+        }
+
+        async function deleteTask(taskId) {
+            if (!confirm('Удалить задачу?')) return;
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch(`${API_BASE}/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    await loadTasks();
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        window.onclick = (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
