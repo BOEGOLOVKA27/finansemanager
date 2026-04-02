@@ -3,18 +3,11 @@
 {% block title %}Задачи — FinanceTrack{% endblock %}
 
 {% block content %}
-<!-- Sidebar Popular Tags -->
-<div class="sidebar-tags" id="sidebarPopularTags">
-    <h4 class="card-title">🔥 Популярные теги</h4>
-    <div class="popular-tags-list" id="sidebarTagsList">
-        <div class="loading-state" style="padding: 0.5rem; font-size: 0.75rem;">
-            <i class="fas fa-spinner fa-spin"></i>
-        </div>
-    </div>
-</div>
-
 <section class="tasks-section">
-    <div class="section-header">
+    <div class="tasks-layout">
+        <!-- Основной контент -->
+        <div class="tasks-main-content">
+            <div class="section-header">
         <div class="header-left">
             <h2 class="section-title">Управление задачами</h2>
             
@@ -129,21 +122,6 @@
         </div>
     </div>
 
-    <!-- Популярные теги -->
-    <div class="card" id="popularTagsCard">
-        <div class="card-body">
-            <div class="card-header">
-                <h3 class="card-title">Популярные теги</h3>
-            </div>
-            <div id="popularTagsList" class="popular-tags-list">
-                <div class="loading-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <span>Загрузка тегов...</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Список задач -->
     <div class="card">
         <div class="card-body">
@@ -165,11 +143,43 @@
             </div>
         </div>
     </div>
+
+    <!-- Боковая панель: Популярные теги -->
+    <aside class="tasks-sidebar">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">🔥 Популярные теги</h4>
+                <div id="popularTagsList" class="popular-tags-list">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Загрузка тегов...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
 </section>
 
 <style>
 .tasks-section {
     padding: 2rem 0;
+}
+
+.tasks-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.tasks-main-content {
+    min-width: 0;
+}
+
+.tasks-sidebar {
+    position: sticky;
+    top: 1rem;
 }
 
 .section-header {
@@ -620,6 +630,15 @@
 }
 
 @media (max-width: 768px) {
+    .tasks-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .tasks-sidebar {
+        position: static;
+        margin-top: 1.5rem;
+    }
+    
     .form-grid {
         grid-template-columns: 1fr;
     }
@@ -993,7 +1012,7 @@ window.toggleTaskStatus = async (taskId, completed) => {
                 updateStats();
             }
             
-            showNotification(`Задача отмечена как ${completed ? 'выполненная' : 'не выполненная'}`, 'success');
+            // Уведомление убрано по запросу
         } else {
             showNotification('Ошибка при обновлении статуса', 'error');
             loadTasks(); // Перезагружаем задачи
@@ -1456,43 +1475,6 @@ async function loadPopularTags() {
                 <p>Не удалось загрузить теги</p>
             </div>
         `;
-    }
-    
-    // Also load sidebar tags
-    loadSidebarPopularTags();
-}
-
-// Load popular tags for sidebar
-async function loadSidebarPopularTags() {
-    const container = document.getElementById('sidebarTagsList');
-    if (!container) return;
-    
-    try {
-        const response = await fetch('/api/tags/popular', {
-            headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('authToken')
-            }
-        });
-        
-        if (response.ok) {
-            const tags = await response.json();
-            
-            if (tags && tags.length > 0) {
-                container.innerHTML = tags.map(tag => `
-                    <div class="popular-tag-item">
-                        <span class="tag-badge">#${tag.name}</span>
-                        <span class="tag-count">${tag.usage_count}</span>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-lighter); padding: 0.5rem;">Нет тегов</div>';
-            }
-        } else {
-            container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-lighter); padding: 0.5rem;">Нет тегов</div>';
-        }
-    } catch (error) {
-        console.error('Error loading popular tags:', error);
-        container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-lighter); padding: 0.5rem;">Ошибка</div>';
     }
 }
 

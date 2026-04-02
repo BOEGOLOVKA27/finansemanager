@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Менеджер задач</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .api-config {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .api-config label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .api-config input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tasks-list {
+            padding: 30px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .tasks-list h2 {
+            margin-bottom: 20px;
+            color: #495057;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+
+        .task-item:hover {
+            transform: translateX(5px);
+        }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 18px;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+
+        .task-description {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .task-priority {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority-low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .priority-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .priority-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-tasks {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+        }
+
+        .toggle-config {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-config:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Менеджер задач</h1>
+            <p>Создавайте и управляйте задачами через API</p>
+        </div>
+
+        <div class="api-config">
+            <button class="toggle-config" onclick="toggleConfig()">⚙️ Настройки API</button>
+            <div id="configSection" class="hidden">
+                <div class="form-group">
+                    <label for="apiUrl">URL API эндпоинта</label>
+                    <input type="text" id="apiUrl" placeholder="https://api.example.com/tasks" value="/api/tasks">
+                </div>
+                <div class="form-group">
+                    <label for="apiKey">API Key (если требуется)</label>
+                    <input type="text" id="apiKey" placeholder="Ваш API ключ">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div id="alert" class="alert"></div>
+
+            <form id="taskForm">
+                <div class="form-group">
+                    <label for="title">Название задачи *</label>
+                    <input type="text" id="title" required placeholder="Введите название задачи">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Описание</label>
+                    <textarea id="description" placeholder="Опишите задачу подробно"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Приоритет</label>
+                    <select id="priority">
+                        <option value="low">Низкий</option>
+                        <option value="medium" selected>Средний</option>
+                        <option value="high">Высокий</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dueDate">Срок выполнения</label>
+                    <input type="date" id="dueDate">
+                </div>
+
+                <div class="form-group">
+                    <label for="assignee">Исполнитель</label>
+                    <input type="text" id="assignee" placeholder="Кто будет выполнять">
+                </div>
+
+                <button type="submit" class="btn" id="submitBtn">
+                    Создать задачу
+                </button>
+            </form>
+        </div>
+
+        <div class="tasks-list">
+            <h2>📝 Созданные задачи</h2>
+            <div id="tasksContainer">
+                <div class="no-tasks">Задачи пока не созданы</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Хранилище задач
+        let tasks = [];
+
+        // Переключение видимости настроек API
+        function toggleConfig() {
+            const configSection = document.getElementById('configSection');
+            configSection.classList.toggle('hidden');
+        }
+
+        // Загрузка задач из API при инициализации
+        async function loadTasks() {
+            try {
+                const apiUrl = document.getElementById('apiUrl').value;
+                const apiKey = document.getElementById('apiKey').value;
+
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                if (apiKey) {
+                    headers['Authorization'] = `Bearer ${apiKey}`;
+                }
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log('Требуется авторизация для загрузки задач');
+                        return;
+                    }
+                    throw new Error(`Ошибка API: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Преобразуем данные API в формат для отображения
+                if (Array.isArray(data)) {
+                    tasks = data.map(task => ({
+                        id: task.id,
+                        title: task.title,
+                        description: task.description || '',
+                        priority: task.priority || 'medium',
+                        dueDate: task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '',
+                        assignee: task.assignee || '',
+                        createdAt: task.created_at || new Date().toISOString()
+                    }));
+                    renderTasks();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки задач:', error);
+            }
+        }
+
+        // Показ уведомлений
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Отправка формы
+        document.getElementById('taskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Блокируем кнопку и показываем индикатор загрузки
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Создание...';
+
+            // Собираем данные формы
+            const taskData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                priority: document.getElementById('priority').value,
+                dueDate: document.getElementById('dueDate').value,
+                assignee: document.getElementById('assignee').value,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                // Получаем настройки API
+                const apiUrl = document.getElementById('apiUrl').value;
+                const apiKey = document.getElementById('apiKey').value;
+
+                // Настраиваем заголовки
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                if (apiKey) {
+                    headers['Authorization'] = `Bearer ${apiKey}`;
+                }
+
+                // Отправляем запрос к API
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(taskData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка API: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Добавляем задачу в список
+                tasks.unshift({
+                    ...taskData,
+                    id: result.id || tasks.length + 1
+                });
+
+                // Очищаем форму
+                this.reset();
+                document.getElementById('priority').value = 'medium';
+
+                // Обновляем список задач
+                renderTasks();
+
+                showAlert('✅ Задача успешно создана!', 'success');
+
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showAlert(`❌ Ошибка: ${error.message}. Проверьте настройки API.`, 'error');
+                
+                // Для демонстрации добавляем задачу локально
+                tasks.unshift({
+                    ...taskData,
+                    id: tasks.length + 1
+                });
+                renderTasks();
+            } finally {
+                // Возвращаем кнопку в исходное состояние
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        // Рендеринг списка задач
+        function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+
+            if (tasks.length === 0) {
+                container.innerHTML = '<div class="no-tasks">Задачи пока не созданы</div>';
+                return;
+            }
+
+            container.innerHTML = tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-title">${escapeHtml(task.title)}</div>
+                    ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
+                    <div class="task-meta">
+                        <span class="task-priority priority-${task.priority}">
+                            ${getPriorityText(task.priority)}
+                        </span>
+                        ${task.dueDate ? `<span>📅 ${formatDate(task.dueDate)}</span>` : ''}
+                        ${task.assignee ? `<span>👤 ${escapeHtml(task.assignee)}</span>` : ''}
+                        <span>🕐 ${formatDate(task.createdAt)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Вспомогательные функции
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getPriorityText(priority) {
+            const priorities = {
+                low: 'Низкий',
+                medium: 'Средний',
+                high: 'Высокий'
+            };
+            return priorities[priority] || priority;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+
+        // Инициализация
+        loadTasks();
+        renderTasks();
+    </script>
+</body>
+</html>
