@@ -1,15 +1,62 @@
 ```
+# Templates
+app/templates/
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Dependencies
-.venv/
-venv/
-env/
+# Logs
+*.log
+
+# Environment
 .env
 .env.local
 .env.*
+
+# Dependencies
+venv/
+.venv/
+.envrc
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.coverage.*
+.nox/
+.tox/
+
+# Cache
+.cache/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+
+# Compressed files
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.gz
+*.bz2
+*.xz
+*.7z
+*.rar
 ```

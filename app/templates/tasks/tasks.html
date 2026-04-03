@@ -524,6 +524,28 @@
     color: var(--error);
 }
 
+.task-toggle-btn {
+    padding: 0.35rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.35rem;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-toggle-btn:hover {
+    background: var(--background-lighter);
+    color: var(--primary);
+}
+
+.toggle-icon {
+    transition: transform 0.2s;
+}
+
 .task-description {
     color: var(--text-light);
     font-size: 0.8rem;
@@ -746,6 +768,9 @@ function renderTasks(filteredTasks = null) {
                 <div class="task-header-row">
                     <h4 class="task-title">${escapeHtml(task.title)}</h4>
                     <div class="task-actions-row">
+                        ${task.description ? `<button class="task-toggle-btn" onclick="toggleTaskDescription(${task.id})" title="Показать описание">
+                            <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>` : '<span style="width: 16px;"></span>'}
                         <span class="task-date">
                             <i class="far fa-calendar"></i>
                             ${new Date(task.created_at).toLocaleDateString('ru-RU')}
@@ -760,7 +785,7 @@ function renderTasks(filteredTasks = null) {
                         </div>
                     </div>
                 </div>
-                ${task.description ? `<p class="task-description">${escapeHtml(task.description)}</p>` : ''}
+                ${task.description ? `<p class="task-description" id="task-desc-${task.id}" style="display: none;">${escapeHtml(task.description)}</p>` : ''}
                 
                 <div class="task-meta">
                     ${task.tags && task.tags.length > 0 ? `
@@ -1000,6 +1025,26 @@ window.toggleTaskStatus = async (taskId, completed) => {
         console.error('Error toggling task status:', error);
         showNotification('Ошибка при обновлении статуса', 'error');
         loadTasks();
+    }
+};
+
+// Переключение видимости описания задачи
+window.toggleTaskDescription = (taskId) => {
+    const descElement = document.getElementById(`task-desc-${taskId}`);
+    const toggleBtn = document.querySelector(`button[onclick="toggleTaskDescription(${taskId})"] .toggle-icon`);
+    
+    if (descElement) {
+        if (descElement.style.display === 'none') {
+            descElement.style.display = 'block';
+            if (toggleBtn) {
+                toggleBtn.style.transform = 'rotate(180deg)';
+            }
+        } else {
+            descElement.style.display = 'none';
+            if (toggleBtn) {
+                toggleBtn.style.transform = 'rotate(0deg)';
+            }
+        }
     }
 };
 
