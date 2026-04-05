@@ -12,13 +12,13 @@
             <h2 class="section-title">Управление задачами</h2>
             
             <!-- Кнопка фильтра -->
-            <div class="filter-container" style="position: relative; display: inline-block;">
+            <div class="filter-container">
                 <button class="btn btn-icon" id="filterBtn" title="Фильтры и сортировка">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                 </button>
-                
+
                 <!-- Выпадающий список фильтров -->
-                <div class="filter-dropdown" id="filterDropdown" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 5px;">
+                <div class="filter-dropdown" id="filterDropdown" style="display: none;">
                     <div class="filter-section">
                         <span class="filter-label">Сортировка</span>
                         <div class="filter-options">
@@ -26,15 +26,6 @@
                             <button class="filter-option" data-sort="date_asc">📅 По дате (старые)</button>
                             <button class="filter-option" data-sort="alpha_asc">🔤 А-Я</button>
                             <button class="filter-option" data-sort="alpha_desc">🔤 Я-А</button>
-                        </div>
-                    </div>
-                    <div class="filter-divider"></div>
-                    <div class="filter-section">
-                        <span class="filter-label">Статус</span>
-                        <div class="filter-options">
-                            <button class="filter-option active" data-filter-status="all">Все</button>
-                            <button class="filter-option" data-filter-status="active">В работе</button>
-                            <button class="filter-option" data-filter-status="completed">Выполнено</button>
                         </div>
                     </div>
                 </div>
@@ -113,13 +104,23 @@
                 Выполненные
             </button>
         </div>
-        
+
         <div class="search-group">
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchTasks" class="search-input" placeholder="Поиск задач...">
             </div>
         </div>
+    </div>
+
+    <!-- Вкладки тегов -->
+    <div class="tag-tabs-bar" id="tagTabsBar">
+        <div class="tag-tabs-container" id="tagTabsContainer">
+            <!-- Вкладки будут добавлены динамически -->
+        </div>
+        <button class="close-all-tags-btn" id="closeAllTagsBtn" title="Закрыть все вкладки">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
 
     <!-- Список задач -->
@@ -206,18 +207,23 @@
     color: white;
 }
 
+/* Контейнер для выпадающего списка фильтров */
+.filter-container {
+    position: relative;
+    display: inline-block;
+}
+
 /* Выпадающий список фильтров */
 .filter-dropdown {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 8px);
     left: 0;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
+    background: #1e293b;
+    border: 1px solid #334155;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     z-index: 100;
     min-width: 220px;
-    margin-top: 0.5rem;
     overflow: hidden;
 }
 
@@ -263,12 +269,6 @@
 .filter-option.active {
     background: var(--primary);
     color: white;
-}
-
-.filter-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 0.25rem 0.75rem;
 }
 
 .task-form {
@@ -347,22 +347,6 @@
     gap: 1rem;
 }
 
-.tag-filter-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 1rem;
-    background: var(--background-light);
-    border: 1px solid var(--primary);
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-}
-
-.tag-filter-info strong {
-    color: var(--primary);
-}
-
 .filter-group {
     display: flex;
     gap: 0.5rem;
@@ -423,6 +407,111 @@
 .search-input:focus {
     outline: none;
     border-color: var(--primary);
+}
+
+/* Вкладки тегов */
+.tag-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background: var(--background-light);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+}
+
+.tag-tabs-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    flex: 1;
+}
+
+.tag-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--primary);
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    white-space: nowrap;
+    opacity: 0.6;
+}
+
+.tag-tab.tab-active {
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tab-all {
+    background: var(--background-lighter);
+    color: var(--text-light);
+    border: 1px solid var(--border);
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+.tab-all.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tab-all:hover {
+    opacity: 0.85;
+}
+
+.tag-tab:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.tag-tab .tab-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.tag-tab .tab-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.close-all-tags-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.close-all-tags-btn:hover {
+    background: var(--error);
+    border-color: var(--error);
+    color: white;
 }
 
 .tasks-list {
@@ -679,9 +768,10 @@ const serverAPI = new ServerAPI();
 
 // Функция для получения и сохранения токена через сессию Flask
 async function fetchAndStoreToken() {
-    // Проверяем, есть ли уже токен
-    if (serverAPI.getAuthToken()) {
-        console.log('Токен уже существует');
+    // Проверяем, есть ли уже токен в localStorage/sessionStorage
+    const existingToken = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    if (existingToken) {
+        console.log('Токен уже существует:', existingToken.substring(0, 20) + '...');
         return true;
     }
     
@@ -724,9 +814,42 @@ const completedTasksEl = document.getElementById('completedTasks');
 
 let allTasks = [];
 let currentFilter = 'all';
-let currentTagFilter = null;
-let currentStatusFilter = 'all';
+let activeTagTabs = [];          // Массив открытых вкладок тегов
+let currentActiveTab = null;     // null = "Все", строка = имя выбранного тега
 let currentSort = 'date_desc';
+
+// Загрузка состояния вкладок из localStorage
+function loadTabState() {
+    try {
+        const saved = localStorage.getItem('task_tag_tabs');
+        if (saved) {
+            activeTagTabs = JSON.parse(saved);
+        }
+    } catch (e) {
+        activeTagTabs = [];
+    }
+    try {
+        const savedActive = localStorage.getItem('task_active_tab');
+        if (savedActive && savedActive !== 'null') {
+            // Проверяем, есть ли такой тег всё ещё в открытых вкладках
+            if (activeTagTabs.includes(savedActive)) {
+                currentActiveTab = savedActive;
+            }
+        }
+    } catch (e) {
+        currentActiveTab = null;
+    }
+}
+
+// Сохранение состояния вкладок в localStorage
+function saveTabState() {
+    try {
+        localStorage.setItem('task_tag_tabs', JSON.stringify(activeTagTabs));
+        localStorage.setItem('task_active_tab', currentActiveTab || 'null');
+    } catch (e) {
+        // ignore
+    }
+}
 
 // Загрузка задач
 async function loadTasks() {
@@ -754,7 +877,8 @@ function renderTasks(filteredTasks = null) {
     const tasks = filteredTasks || allTasks;
     
     if (tasks.length === 0) {
-        showEmptyState(currentTagFilter ? `Нет задач с тегом #${currentTagFilter}` : null);
+        const emptyMsg = currentActiveTab ? `Нет задач с тегом #${currentActiveTab}` : null;
+        showEmptyState(emptyMsg);
         return;
     }
     
@@ -797,22 +921,6 @@ function renderTasks(filteredTasks = null) {
             </div>
         </div>
     `).join('');
-    
-    // Добавляем обработчики для тегов после рендеринга
-    if (currentTagFilter) {
-        const filterInfo = document.createElement('div');
-        filterInfo.className = 'tag-filter-info';
-        filterInfo.innerHTML = `
-            <span>Фильтр по тегу: <strong>#${currentTagFilter}</strong></span>
-            <button class="btn btn-sm btn-outline" onclick="clearTagFilter()">
-                <i class="fas fa-times"></i> Сбросить
-            </button>
-        `;
-        const existingInfo = document.querySelector('.tag-filter-info');
-        if (!existingInfo && tasksList.parentNode) {
-            tasksList.parentNode.insertBefore(filterInfo, tasksList);
-        }
-    }
 }
 
 // Обновление статистики
@@ -1309,17 +1417,10 @@ function applyFilters() {
         filtered = filtered.filter(t => t.completed);
     }
     
-    // Фильтр по статусу (из нового dropdown)
-    if (currentStatusFilter === 'active') {
-        filtered = filtered.filter(t => !t.completed);
-    } else if (currentStatusFilter === 'completed') {
-        filtered = filtered.filter(t => t.completed);
-    }
-    
-    // Фильтр по тегу
-    if (currentTagFilter) {
-        filtered = filtered.filter(t => 
-            t.tags && t.tags.some(tag => tag.name.toLowerCase() === currentTagFilter.toLowerCase())
+    // Фильтр по активному тегу (вкладке) — показывает только задачи с этим тегом
+    if (currentActiveTab) {
+        filtered = filtered.filter(t =>
+            t.tags && t.tags.some(tag => tag.name.toLowerCase() === currentActiveTab.toLowerCase())
         );
     }
     
@@ -1362,24 +1463,87 @@ function applySortToTasks(tasks) {
     }
 }
 
-// Фильтрация по тегу
+// Фильтрация по тегу — открывает/добавляет вкладку и переключается на неё
 window.filterByTag = function(tagName) {
-    currentTagFilter = tagName;
-    
-    // Сбрасываем активный класс у кнопок фильтров
-    filterButtons.forEach(b => b.classList.remove('active'));
-    
+    // Если вкладка ещё не открыта — добавляем
+    if (!activeTagTabs.includes(tagName)) {
+        activeTagTabs.push(tagName);
+    }
+
+    // Переключаемся на эту вкладку
+    currentActiveTab = tagName;
+    saveTabState();
     applyFilters();
+    renderTagTabs();
 };
 
-// Очистка фильтра по тегу
-window.clearTagFilter = function() {
-    currentTagFilter = null;
-    const existingInfo = document.querySelector('.tag-filter-info');
-    if (existingInfo) {
-        existingInfo.remove();
+// Закрытие одной вкладки тега
+window.closeTagTab = function(tagName) {
+    activeTagTabs = activeTagTabs.filter(t => t !== tagName);
+
+    // Если закрыли активную вкладку — переключаемся на "Все"
+    if (currentActiveTab === tagName) {
+        currentActiveTab = null;
     }
+
+    saveTabState();
     applyFilters();
+    renderTagTabs();
+};
+
+// Закрытие всех вкладок тегов
+window.closeAllTagTabs = function() {
+    activeTagTabs = [];
+    currentActiveTab = null;
+    saveTabState();
+    applyFilters();
+    renderTagTabs();
+};
+
+// Переключение на вкладку «Все»
+window.toggleShowAllTasks = function() {
+    currentActiveTab = null;
+    saveTabState();
+    applyFilters();
+    renderTagTabs();
+};
+
+// Рендеринг вкладок тегов
+function renderTagTabs() {
+    const bar = document.getElementById('tagTabsBar');
+    const container = document.getElementById('tagTabsContainer');
+
+    bar.style.display = 'flex';
+
+    // Вкладка «Все» — подсвечена когда currentActiveTab = null
+    const allActiveClass = currentActiveTab === null ? 'active' : '';
+    let html = `
+        <div class="tag-tab tab-all ${allActiveClass}" onclick="toggleShowAllTasks()">
+            <span>📋 Все</span>
+        </div>
+    `;
+
+    for (const tagName of activeTagTabs) {
+        const tabActive = currentActiveTab === tagName ? 'tab-active' : '';
+        html += `
+            <div class="tag-tab ${tabActive}" onclick="switchToTab('${escapeHtml(tagName)}')">
+                <span>#${escapeHtml(tagName)}</span>
+                <button class="tab-close" onclick="event.stopPropagation(); closeTagTab('${escapeHtml(tagName)}')" title="Закрыть вкладку">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
+// Переключение на конкретную вкладку тега
+window.switchToTab = function(tagName) {
+    currentActiveTab = tagName;
+    saveTabState();
+    applyFilters();
+    renderTagTabs();
 };
 
 // Открытие/закрытие формы создания задачи
@@ -1424,27 +1588,16 @@ if (filterBtn && filterDropdown) {
         option.addEventListener('click', () => {
             const sortType = option.dataset.sort;
             applySort(sortType);
-            
+
             // Обновляем активный класс
             filterDropdown.querySelectorAll('[data-sort]').forEach(o => o.classList.remove('active'));
             option.classList.add('active');
         });
     });
-
-    // Обработчики для опций статуса
-    filterDropdown.querySelectorAll('[data-filter-status]').forEach(option => {
-        option.addEventListener('click', () => {
-            const statusFilter = option.dataset.filterStatus;
-            currentStatusFilter = statusFilter;
-            
-            // Обновляем активный класс
-            filterDropdown.querySelectorAll('[data-filter-status]').forEach(o => o.classList.remove('active'));
-            option.classList.add('active');
-            
-            applyFilters();
-        });
-    });
 }
+
+// Кнопка закрытия всех вкладок тегов
+document.getElementById('closeAllTagsBtn').addEventListener('click', closeAllTagTabs);
 
 // Показ уведомления
 function showNotification(message, type = 'info') {
@@ -1503,6 +1656,8 @@ async function loadPopularTags() {
 }
 
 // Инициализация
+loadTabState();
+renderTagTabs();
 loadTasks();
 loadPopularTags();
 </script>
