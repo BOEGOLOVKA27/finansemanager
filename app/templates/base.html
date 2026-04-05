@@ -11,7 +11,7 @@
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
 </head>
 <body>
     <!-- Navigation -->
@@ -46,11 +46,6 @@
                     <li>
                         <a href="{{ url_for('main.tasks') }}" class="nav-link {% if request.endpoint == 'main.tasks' %}active{% endif %}">
                             Задачи
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('main.feedback') }}" class="nav-link {% if request.endpoint == 'main.feedback' %}active{% endif %}">
-                            Обратная связь
                         </a>
                     </li>
                     <li class="nav-user-dropdown">
@@ -176,11 +171,23 @@
     <!-- Сохранение токена при входе и восстановление при перезагрузке -->
     {% if current_user.is_authenticated %}
     <script>
-        // Восстановление JWT токена из localStorage при загрузке страницы
-        // Это обеспечивает сохранение токена до выхода пользователя
+        // Сохранение JWT токена в localStorage при загрузке страницы
+        // Это обеспечивает работу токена даже после перезапуска сервера
         document.addEventListener('DOMContentLoaded', function() {
+            const token = "{{ current_user.token or '' }}";
             const storedToken = localStorage.getItem('access_token');
-            if (storedToken) {
+
+            // Если токен есть в базе пользователя, но нет в localStorage — сохраняем
+            if (token && !storedToken) {
+                localStorage.setItem('access_token', token);
+                sessionStorage.setItem('access_token', token);
+                console.log('JWT токен сохранен из базы пользователя в localStorage');
+            } else if (token && storedToken && token !== storedToken) {
+                // Токен в базе новый — обновляем
+                localStorage.setItem('access_token', token);
+                sessionStorage.setItem('access_token', token);
+                console.log('JWT токен обновлен из базы пользователя');
+            } else if (storedToken) {
                 console.log('JWT токен восстановлен из localStorage');
             }
         });
@@ -192,19 +199,8 @@
 
 {% if current_user.is_authenticated %}
 <script>
-    // Сохранение JWT токена в localStorage и sessionStorage при авторизации
+    // Обработчик для отметки выполнения задач на главной странице
     document.addEventListener('DOMContentLoaded', function() {
-        // Получаем токен из базы данных пользователя
-        const token = "{{ current_user.token or '' }}";
-        if (token) {
-            // Сохраняем в localStorage для постоянного доступа
-            localStorage.setItem('access_token', token);
-            // Сохраняем в sessionStorage для восстановления после перезапуска сервера
-            sessionStorage.setItem('access_token', token);
-            console.log('JWT токен сохранен');
-        }
-        
-        // Обработчик для отметки выполнения задач на главной странице
         document.querySelectorAll('.mini-task-checkbox').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();

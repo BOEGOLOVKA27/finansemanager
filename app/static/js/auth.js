@@ -56,20 +56,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Восстановление JWT токена из sessionStorage при перезагрузке страницы
+// Восстановление JWT токена при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-    // Проверяем, есть ли токен в sessionStorage (сохранен после входа)
-    const storedToken = sessionStorage.getItem('access_token');
-    if (storedToken) {
-        localStorage.setItem('access_token', storedToken);
-        console.log('JWT токен восстановлен из sessionStorage');
-    }
-    
-    // Также проверяем, есть ли токен в localStorage (для случаев когда сессия активна)
+    // Приоритет 1: Проверяем localStorage (он сохраняется между перезагрузками и перезапусками сервера)
     const localToken = localStorage.getItem('access_token');
     if (localToken) {
-        console.log('JWT токен найден в localStorage');
+        console.log('JWT токен восстановлен из localStorage');
+        return;
     }
+
+    // Приоритет 2: Проверяем sessionStorage (работает в рамках текущей сессии браузера)
+    const sessionToken = sessionStorage.getItem('access_token');
+    if (sessionToken) {
+        localStorage.setItem('access_token', sessionToken);
+        console.log('JWT токен восстановлен из sessionStorage и сохранен в localStorage');
+        return;
+    }
+
+    console.log('JWT токен не найден');
 });
 
 // Очистка токенов при выходе пользователя
